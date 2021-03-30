@@ -18,5 +18,8 @@ chmod +x get_data.sh
 ## clean the data
 
 ```
+# create a virtual environment first, i.e.
+mkvirtualenv 859
+pip install -r requirements.txt
 python clean_data.py
 ```
