@@ -14,3 +14,9 @@ https://www.kaggle.com/arslanali4343/sales-of-video-games
 chmod +x get_data.sh
 ./get_data.sh
 ```
+
+## clean the data
+
+```
+python clean_data.py
+```
