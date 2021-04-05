@@ -1,1 +1,35 @@
-<h1>Hello world!</h1>
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    .error {
+        color: red;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-lite@4.8.1"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 400, "continuousHeight": 300}}, "vconcat": [{"hconcat": [{"mark": "area", "encoding": {"color": {"condition": {"type": "nominal", "field": "Genre", "legend": null, "selection": "selector203"}, "value": "lightgray"}, "x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales"}}, "selection": {"selector203": {"type": "single", "fields": ["Genre"]}}}, {"mark": "point", "encoding": {"color": {"condition": {"type": "nominal", "field": "Genre", "legend": null, "selection": "selector203"}, "value": "lightgray"}, "y": {"type": "nominal", "axis": {"orient": "right"}, "field": "Genre"}}, "selection": {"selector203": {"type": "single", "fields": ["Genre"]}}}]}, {"mark": "bar", "encoding": {"color": {"condition": {"value": "blue", "selection": "selector204"}, "value": "lightgray"}, "x": {"type": "quantitative", "field": "sum_of_global_sales"}, "y": {"type": "nominal", "field": "Publisher", "sort": "-x"}}, "selection": {"selector204": {"type": "single", "fields": ["Publisher"]}}, "transform": [{"filter": {"selection": "selector203"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Publisher"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"vconcat": [{"mark": "trail", "encoding": {"x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales"}}, "selection": {"selector205": {"type": "interval", "encodings": ["x"]}}, "transform": [{"filter": {"selection": "selector203"}}, {"filter": {"selection": "selector204"}}]}, {"mark": "bar", "encoding": {"color": {"condition": {"value": "blue", "selection": "selector206"}, "value": "lightgray"}, "x": {"type": "quantitative", "field": "sum_of_global_sales"}, "y": {"type": "nominal", "field": "Name", "sort": "-x"}}, "selection": {"selector206": {"type": "single", "fields": ["Name"]}}, "transform": [{"filter": {"selection": "selector203"}}, {"filter": {"selection": "selector204"}}, {"filter": {"selection": "selector205"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Name"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"mark": "bar", "encoding": {"x": {"type": "nominal", "field": "Platform"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales"}}, "transform": [{"filter": {"selection": "selector203"}}, {"filter": {"selection": "selector204"}}, {"filter": {"selection": "selector205"}}, {"filter": {"selection": "selector206"}}]}]}], "data": {"url": "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean.json"}, "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json"};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div class="error" style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
