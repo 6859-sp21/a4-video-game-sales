@@ -2,8 +2,116 @@
 <html>
 <head>
   <style>
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      margin-bottom: 0px;
+    }
     .error {
         color: red;
+    }
+    #wrapper {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      font-family: monospace !important;
+    }
+    #header, #about {
+      width: 80%;
+      /*padding-left: 200px;
+      padding-right: 200px;*/
+      display: flex;
+      justify-content: center;
+      /*align-items: center;*/
+      flex-direction: column;
+      padding-bottom: 25px;
+    }
+
+    #top-bar {
+      display: flex;
+      flex-direction: row;
+      vertical-align: middle;
+    }
+    #about {
+      padding-bottom: 0px !important;
+    }
+    #page-title {
+      font-size: 3em;
+    }
+    .description {
+      font-size: 1.5em;
+      padding-bottom: 25px;
+    }
+    .description-top {
+      /*vertical-align: middle;
+      display: flex;
+      justify-content: center;
+      align-items: center;*/
+      padding-bottom: 0px !important;
+    }
+    .container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .top-left {
+      flex: 50%; 
+    }
+
+    .top-right {
+      /*flex: 50%;*/
+      text-align: right;
+      vertical-align: middle;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding-bottom: 0px !important;
+    }
+
+    .bottom-left {
+      flex: 50%;
+    }
+
+    .bottom-right {
+      flex: 50%;
+      text-align: right;
+    }
+    #spacer {
+      color: black;
+      border-style: inset;
+      border-width: 1px;
+      margin: 0.5em auto;
+      margin-left: 0;
+      margin-right: 0;
+      width: 100%;
+    }
+    #yoda {
+      width: 30%;
+    }
+    #vis {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #myBtn {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      right: 30px;
+      z-index: 99;
+      font-size: 18px;
+      border: none;
+      outline: none;
+      background-color: gray;
+      color: white;
+      cursor: pointer;
+      padding: 15px;
+      border-radius: 4px;
+      font-family: monospace !important;
+    }
+    #myBtn:hover {
+      background-color: #555;
     }
   </style>
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega@5"></script>
@@ -11,10 +119,66 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm//vega-embed@6"></script>
 </head>
 <body>
-  <div id="vis"></div>
+  <div id="wrapper">
+    <button onclick="topFunction()" id="myBtn" title="Go to top">back to top ⬆️</button>
+    <div id="header">
+      <div class="container">
+          <div class="top-left">
+              <h1 id="page-title">🎮 Sales of Video Games 🎮</h1>
+          </div>
+          <div class="top-right">
+              <p class="description description-top"><a href="#vis">Visualization</a> | <a href="#about">About</a></p>
+          </div>
+      </div>
+      <div id="top-bar">
+        
+        
+      </div>
+      <p class="description">
+        🎮 Video games sales have taken off since they came onto the scene in the 1980s. 🚀
+        <br>
+        <br>
+        🖱️ <b>Click through the charts below</b> to explore your favorite games, and learn about some games you've never even heard of!
+        <br>
+        <br>
+        ⇧+🖱️ <b>Shift + Click to select multiple items in bar charts. 📊</b>
+        <br>
+        <br>
+        🖱️+ ↔️ <b>Click and drag in the scatter plot</b> to select specific years for a given game name.
+      </p>
+      <hr id="spacer">
+    </div>
+    <div id="vis"></div>
+    <div id="about">
+      <hr id="spacer">
+      <p class="description">
+        🔗 <b>Useful Links</b>
+        <br>
+        <br>
+        📈 <a href="https://www.kaggle.com/arslanali4343/sales-of-video-games" target="_blank"> Original Kaggle Dataset</a>
+        <br>
+        💻 <a href="https://github.com/6859-sp21/a4-video-game-sales" target="_blank">GitHub Repository</a>
+        <br>
+        📄 <a href="https://altair-viz.github.io/" target="_blank">Altair Visualization Software</a>
+        <br>
+        ✏️ <a href="http://vis.mit.edu/classes/6.859/" target="_blank">6.859 Home</a>
+        <br>
+        <br>
+        📊 <b>Authors</b>
+        <br>
+        <br>
+        - Christian Moroney {cmoroney}
+        <br>
+        - Jackson Bernatchez {jrbernat}
+        <br>
+        - Kevin Lyons {kalyons}
+      </p>
+      <img id="yoda" src="yoda.jpeg">
+    </div>
+  </div>
   <script>
     (function(vegaEmbed) {
-      var spec = {"config": {"view": {"continuousWidth": 400, "continuousHeight": 300, "strokeWidth": 0}, "padding": {"left": 500, "top": 5, "right": 5, "bottom": 1000}}, "vconcat": [{"hconcat": [{"mark": {"type": "area", "dx": -50}, "encoding": {"color": {"type": "nominal", "field": "Genre", "legend": null, "scale": {"scheme": "tableau20"}}, "opacity": {"condition": {"value": 1, "selection": "selector031"}, "value": 0.2}, "x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales", "title": "Total Global Sales"}}, "selection": {"selector031": {"type": "single", "fields": ["Genre"], "empty": "none"}}, "title": "Total Global Sales by Release Year"}, {"mark": "point", "encoding": {"color": {"type": "nominal", "field": "Genre"}, "y": {"type": "nominal", "axis": {"orient": "right"}, "field": "Genre"}}, "selection": {"selector031": {"type": "single", "fields": ["Genre"], "empty": "none"}}}]}, {"mark": {"type": "text", "dx": 0, "dy": -20, "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Genre"}, "text": {"type": "nominal", "field": "Genre"}}, "transform": [{"filter": {"selection": "selector031"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "opacity": {"condition": {"value": 1, "selection": "selector032"}, "value": 0.2}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD)"}, "y": {"type": "nominal", "field": "Publisher", "sort": "-x"}}, "selection": {"selector032": {"type": "multi", "fields": ["Publisher"], "empty": "none"}}, "transform": [{"filter": {"selection": "selector031"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Publisher"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"mark": {"type": "text", "dx": 0, "dy": 0, "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "text": {"type": "nominal", "field": "Publisher"}, "y": {"type": "nominal", "axis": {"domainOpacity": 0, "grid": false, "labels": false}, "field": "Publisher", "title": ""}}, "transform": [{"filter": {"selection": "selector032"}}]}, {"mark": {"type": "point", "width": 2}, "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales", "title": "Total Global Sales (USD)"}}, "selection": {"selector033": {"type": "interval", "encodings": ["x"]}}, "transform": [{"filter": {"selection": "selector031"}}, {"filter": {"selection": "selector032"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Name"}, "opacity": {"condition": {"value": 1, "selection": "selector034"}, "value": 0.2}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD)"}, "y": {"type": "nominal", "field": "Name", "sort": "-x"}}, "selection": {"selector034": {"type": "multi", "fields": ["Name"], "empty": "none"}}, "transform": [{"filter": {"selection": "selector031"}}, {"filter": {"selection": "selector032"}}, {"filter": {"selection": "selector033"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Name"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"mark": {"type": "text", "dx": 0, "dy": 0, "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Name"}, "text": {"type": "nominal", "field": "Name"}, "y": {"type": "nominal", "axis": {"domainOpacity": 0, "grid": false, "labels": false}, "field": "Name", "title": ""}}, "transform": [{"filter": {"selection": "selector034"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Name"}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD)"}, "y": {"type": "nominal", "field": "Platform", "sort": "-x", "title": "Platform"}}, "title": "Breakdown of Global Sales", "transform": [{"filter": {"selection": "selector031"}}, {"filter": {"selection": "selector032"}}, {"filter": {"selection": "selector033"}}, {"filter": {"selection": "selector034"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Platform", "Name"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}], "data": {"url": "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean.json"}, "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json"};
+      var spec = {"config": {"view": {"continuousWidth": 400, "continuousHeight": 300, "strokeWidth": 0}, "axis": {"labelFont": "monospace", "labelFontSize": 12, "titleFont": "monospace", "titleFontSize": 16, "titlePadding": 20}, "padding": {"left": 200, "top": 5, "right": 5, "bottom": 1000}, "title": {"font": "monospace", "fontSize": 18}}, "vconcat": [{"hconcat": [{"mark": {"type": "area", "dx": -50}, "encoding": {"color": {"type": "nominal", "field": "Genre", "legend": null, "scale": {"scheme": "tableau20"}}, "opacity": {"condition": {"value": 1, "selection": "selector176"}, "value": 0.2}, "x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales", "title": "Total Global Sales"}}, "selection": {"selector176": {"type": "single", "fields": ["Genre"], "empty": "none"}}, "title": "Total Global Sales by Release Year"}, {"mark": "point", "encoding": {"color": {"type": "nominal", "field": "Genre"}, "y": {"type": "nominal", "axis": {"orient": "right"}, "field": "Genre"}}, "selection": {"selector176": {"type": "single", "fields": ["Genre"], "empty": "none"}}}]}, {"mark": {"type": "text", "dx": 0, "dy": -20, "font": "monospace", "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Genre"}, "text": {"type": "nominal", "field": "Genre"}}, "transform": [{"filter": {"selection": "selector176"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "opacity": {"condition": {"value": 1, "selection": "selector177"}, "value": 0.2}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD, millions)"}, "y": {"type": "nominal", "field": "Publisher", "sort": "-x"}}, "selection": {"selector177": {"type": "multi", "fields": ["Publisher"], "empty": "none"}}, "title": "Sales by Top 10 Publishers for Selected Genre", "transform": [{"filter": {"selection": "selector176"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Publisher"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"mark": {"type": "text", "dx": 0, "dy": 0, "font": "monospace", "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "text": {"type": "nominal", "field": "Publisher"}, "y": {"type": "nominal", "axis": {"domainOpacity": 0, "grid": false, "labels": false}, "field": "Publisher", "title": ""}}, "transform": [{"filter": {"selection": "selector177"}}]}, {"mark": {"type": "point", "width": 2}, "encoding": {"color": {"type": "nominal", "field": "Publisher"}, "x": {"type": "ordinal", "field": "Year"}, "y": {"type": "quantitative", "aggregate": "sum", "field": "Global_Sales", "title": "Total Global Sales (USD, millions)"}}, "selection": {"selector178": {"type": "interval", "encodings": ["x"]}}, "title": "Global Sales over Time for Selected Publishers", "transform": [{"filter": {"selection": "selector176"}}, {"filter": {"selection": "selector177"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Name"}, "opacity": {"condition": {"value": 1, "selection": "selector179"}, "value": 0.2}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD, millions)"}, "y": {"type": "nominal", "field": "Name", "sort": "-x"}}, "selection": {"selector179": {"type": "multi", "fields": ["Name"], "empty": "none"}}, "title": "Top 10 Games for Selected Publishers and Time Range", "transform": [{"filter": {"selection": "selector176"}}, {"filter": {"selection": "selector177"}}, {"filter": {"selection": "selector178"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Name"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}, {"mark": {"type": "text", "dx": 0, "dy": 0, "font": "monospace", "size": 20}, "encoding": {"color": {"type": "nominal", "field": "Name"}, "text": {"type": "nominal", "field": "Name"}, "y": {"type": "nominal", "axis": {"domainOpacity": 0, "grid": false, "labels": false}, "field": "Name", "title": ""}}, "transform": [{"filter": {"selection": "selector179"}}]}, {"mark": "bar", "encoding": {"color": {"type": "nominal", "field": "Name"}, "x": {"type": "quantitative", "field": "sum_of_global_sales", "title": "Total Global Sales (USD, millions)"}, "y": {"type": "nominal", "field": "Platform", "sort": "-x", "title": "Platform"}}, "title": "Top Platforms for Selected Games", "transform": [{"filter": {"selection": "selector176"}}, {"filter": {"selection": "selector177"}}, {"filter": {"selection": "selector178"}}, {"filter": {"selection": "selector179"}}, {"aggregate": [{"op": "sum", "field": "Global_Sales", "as": "sum_of_global_sales"}], "groupby": ["Platform", "Name"]}, {"window": [{"op": "rank", "field": "sum_of_global_sales", "as": "rank"}], "sort": [{"field": "sum_of_global_sales", "order": "descending"}]}, {"filter": "(datum.rank < 10)"}]}], "data": {"url": "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean.json"}, "$schema": "https://vega.github.io/schema/vega-lite/v4.8.1.json"};
       var embedOpt = {"mode": "vega-lite"};
 
       function showError(el, error){
@@ -29,7 +193,27 @@
       vegaEmbed("#vis", spec, embedOpt)
         .catch(error => showError(el, error));
     })(vegaEmbed);
-
   </script>
+  <script>
+    //Get the button
+    var mybutton = document.getElementById("myBtn");
+
+    // When the user scrolls down 20px from the top of the document, show the button
+    window.onscroll = function() {scrollFunction()};
+
+    function scrollFunction() {
+      if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        mybutton.style.display = "block";
+      } else {
+        mybutton.style.display = "none";
+      }
+    }
+
+    // When the user clicks on the button, scroll to the top of the document
+    function topFunction() {
+      document.body.scrollTop = 0;
+      document.documentElement.scrollTop = 0;
+    }
+    </script>
 </body>
 </html>
