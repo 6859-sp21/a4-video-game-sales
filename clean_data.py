@@ -8,6 +8,7 @@ data_filt = data \
 
 # map the Platform field
 platform_map = {
+    'Wii': 'Wii',
     'NES': 'Nintendo Entertainment System',
     'GB': 'Game Boy',
     'DS': 'Nintendo DS',
