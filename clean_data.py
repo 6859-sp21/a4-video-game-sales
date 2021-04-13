@@ -22,6 +22,7 @@ platform_map = {
     'N64': 'Nintendo 64',
     'PS': 'PlayStation',
     'XB': 'Xbox',
+    'PC': 'PC',
     '2600': 'Atari 2600',
     'PSP': 'PlayStation Portable',
     'XOne': 'Xbox One',
