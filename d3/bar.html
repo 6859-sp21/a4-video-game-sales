@@ -1,0 +1,47 @@
+<html>
+	<head>
+    <title>Simple Bar Chart w/ our Data</title>
+	</head>
+	<body>
+		<script src="https://d3js.org/d3.v6.min.js"></script>
+		<div id="container" />
+
+		<script>
+			const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv'
+			d3.csv(dataUrl)
+			  .then((data) => {
+			    // array of objects
+			    console.log(data.length);
+			    
+			    // do something with the data
+			    const container = d3.select('.container');
+  
+				  const barChart = container.selectAll('div')
+				    .data(data)
+				    .join('div')
+				    .text(d => d.value)
+
+				  /* TODO: Add code here to generate the bar chart within the container. 
+				     (Hint: The "barData" variable holds the data to visualize.) */
+				  
+				  barChart
+				    .style('background', 'steelblue')   // Set the background color of the div to 'steelblue'
+				    .style('border', '1px solid white') // Set the border of the divs to 'white'
+				    .style('padding', '3px')            // Give the bars some padding
+				    .style('font-size', 'small')        // Set the font size of text inside the div to 'small'
+				  /* TODO: Add code here to finish styling the visual properties and content of <div> elements */
+				    .style('width', d => `${d.value}%`)
+				    .style('height', '15px')
+				    .style('text-align', 'right')
+				    .style('color', 'white')
+				  
+				  container.style('width', '1000px')
+				  
+				  console.log(container)
+			  })
+			  .catch((error) => {
+			    console.error("Error loading the data");
+			  });
+		</script>
+	</body>
+</html>
