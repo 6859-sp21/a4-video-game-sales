@@ -29,16 +29,10 @@ const barChart = ({data, chartKey, x, y, isClickable, onMouseOver, onMouseLeave,
   const svg = d3.create('svg')
     .attr('viewBox', [0, 0, width, height])
   
-  const sel = svg.append('g')
+  svg.append('g')
     .selectAll('rect')
     .data(data)
-  
-  sel.exit().remove()
-    
-    
-  sel.enter().append("rect")
-
-  sel.join('rect')
+    .join('rect')
     .attr('x', xScale(0))
     .attr('y', (d, i) => yScale(i))
     .attr('width', d => xScale(d.value) - xScale(0))
@@ -127,55 +121,7 @@ d3.csv(dataUrl, d3.autoType).then(data => {
 
   // aggregate
   let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
-  let gameSalesData = sumByCol(dataFilt, 'Name', 'Global_Sales')
   
-  // games chart
-  let selectedGame = null
-  const gameOnMouseOver = d => {
-    d3.selectAll('.bar-game')
-      .transition()
-    d3.selectAll('.bar-game')
-      .filter(d => ! selectedGame || (selectedGame && selectedGame.index !== d.index))
-      .style('opacity', 0.3)
-    d3.selectAll(`#bar-game-${d.index}`)
-      .style('opacity', 1)
-      .style('cursor', 'pointer')
-  }
-  const gameOnMouseLeave = d => {
-    d3.selectAll('.bar-game')
-      .filter(d => selectedGame && selectedGame.index === d.index)
-      .transition()
-      .delay(100)
-      .style('opacity', 1)
-    if (selectedGame) {
-      d3.selectAll('.bar-game')
-        .filter(d => selectedGame && selectedGame.index !== d.index)
-        .transition()
-        .delay(100)
-        .style('opacity', 0.3)
-    }
-  }
-  const gameOnClick = d => {
-    selectedGame = d
-    d3.selectAll('#selected-game')
-      .text(d.name)
-      .style('color', colorScaleGames(selectedGame.name))
-      .text(selectedGame.name)
-    d3.selectAll('.bar-game')
-      .filter(d => selectedGame && selectedGame.index !== d.index)
-      .style('opacity', 0.3)
-  }
-  let { svg: gameChart, colorScale: colorScaleGames } = barChart({
-    data: gameSalesData,
-    chartKey: 'game',
-    x: 'value',
-    y: 'name',
-    isClickable: true,
-    onMouseOver: gameOnMouseOver,
-    onMouseLeave: gameOnMouseLeave,
-    onClick: gameOnClick,
-  })
-
   // publisher chart
   let selectedPublisher = null
   const publisherOnMouseOver = d => {
@@ -190,7 +136,6 @@ d3.csv(dataUrl, d3.autoType).then(data => {
   }
   const publisherOnMouseLeave = d => {
     d3.selectAll('.bar-publisher')
-      .filter(d => selectedPublisher && selectedPublisher.index === d.index)
       .transition()
       .delay(100)
       .style('opacity', 1)
@@ -211,30 +156,6 @@ d3.csv(dataUrl, d3.autoType).then(data => {
     d3.selectAll('.bar')
       .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
       .style('opacity', 0.3)
-    
-    // re-filter
-    const gamesFilt = dataFilt.filter(d => d.Publisher === selectedPublisher.name)
-    gameSalesData = sumByCol(gamesFilt, 'Name', 'Global_Sales')
-
-    // clear selectedGame
-    selectedGame = null
-
-    // update games chart
-    // gameChart.selectAll('rect').data(gamesFilt).join()
-
-    document.getElementById('one').removeChild(gameChart.node())
-    const newChart = barChart({
-      data: gameSalesData,
-      chartKey: 'game',
-      x: 'value',
-      y: 'name',
-      isClickable: true,
-      onMouseOver: gameOnMouseOver,
-      onMouseLeave: gameOnMouseLeave,
-      onClick: gameOnClick,
-    })
-    gameChart = newChart.svg
-    document.getElementById('one').appendChild(gameChart.node())
   }
   const { svg: publisherChart, colorScale } = barChart({
     data: publisherSalesData,
@@ -273,16 +194,6 @@ d3.csv(dataUrl, d3.autoType).then(data => {
   d3.select('#one')
     .append('h1')
     .attr('id', 'selected')
-    .attr('class', 'selected')
-    .style('font-family', 'sans-serif')
-    .text('None')
-    .style('color', 'black')
-  
-  document.getElementById('one').appendChild(gameChart.node())
-
-  d3.select('#one')
-    .append('h1')
-    .attr('id', 'selected-game')
     .attr('class', 'selected')
     .style('font-family', 'sans-serif')
     .text('None')
