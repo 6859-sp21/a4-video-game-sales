@@ -112,7 +112,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             .enter()
             .append("path")
             .attr("class", function (d) { 
-                console.log("myArea " + d.key )
+                // console.log("myArea " + d.key )
                 return "myArea " + d.key })
             .style("fill", function (d) { return color(d.key); })
             .style("opacity", .5)
@@ -129,12 +129,11 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
 
         // A function that update the chart for given boundaries
         function updateChart({selection}) {
-            // if (!d3.sourceEvent) return;
             if (!selection){
                 return
-            } ; // Only transition after input.
-          
-            console.log(x.invert(selection[0]), x.invert(selection[1]))
+            }
+            // USED FOR VARIABLES IN LATERS GRAPHS (YEARS SELECTED)
+            // console.log(x.invert(selection[0]), x.invert(selection[1]))
         }
 
 
@@ -191,9 +190,6 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
             .on("click", genreChoice)
-            // .on("mouseleave", highlightReset)
-            // .on("mouseover", highlight)
-            // .on("mouseout", noHighlight)
 
         // // Add one dot in the legend for each name.
         svg.selectAll("mylabels")
@@ -209,7 +205,5 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
             .on("click", genreChoice)
-            // .on("mouseover", highlight)
-            // .on("mouseout", noHighlight)
 
     })
