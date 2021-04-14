@@ -1,4 +1,9 @@
 
+function genreArrayRemove(arr, value) {
+    return arr.filter(function(ele) {
+        return ele != value;
+    });
+}
 
 // Parse the Data
 d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv").then((data) => {
@@ -167,11 +172,33 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
 
     var genreChoice = function (d) {
         // reduce opacity of all groups
-        clickSelecting = true
-        genresSelected.push("." + d.target.__data__)
-        // Write functions to handle logic checking selected genre against other genres for fading
-        d3.selectAll(".myArea").transition().duration(1250).style("opacity", .1)
-        d3.select("." + d.target.__data__).transition().duration(10).style("opacity", 1)
+        let genreName = "." + d.target.__data__;
+        if (genresSelected.includes(genreName)) {
+            genresSelected = genreArrayRemove(genresSelected, genreName);
+            clickSelecting = genresSelected.length != 0;
+            // console.log("array", genresSelected);
+            // console.log("selection", clickSelecting);
+            if (!clickSelecting) {
+                d3.selectAll(".myArea").transition().duration(1250).style("opacity", .75);
+                return;
+            }
+            d3.select(genreName).transition().duration(1250).style("opacity", .1);
+        }
+        else{
+            if (clickSelecting) {
+                genresSelected.push(genreName);
+                d3.select(genreName).transition().duration(10).style("opacity", 1);
+                return;
+            }
+            else {
+                clickSelecting = true
+                genresSelected.push(genreName)
+                // console.log(genresSelected)
+                // Write functions to handle logic checking selected genre against other genres for fading
+                d3.selectAll(".myArea").transition().duration(1250).style("opacity", .1)
+                d3.select("." + d.target.__data__).transition().duration(10).style("opacity", 1)
+            }
+        }
     }
 
     //////////
@@ -239,5 +266,4 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         .on("mouseover", highlight)
         .on("mouseout", noHighlight)
         .on("click", genreChoice)
-
 })
