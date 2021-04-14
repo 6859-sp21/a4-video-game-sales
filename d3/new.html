@@ -37,15 +37,21 @@
     const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv'
     d3.csv(dataUrl).then(function(data) {
 
+      // groupby Platform
+      const platformCounts = {}
+
       // format the data
       data.forEach(function(d) {
         // console.log(d)
-        d.sales = +d.EU_Sales;
+        platformCounts[d.Platform] = (platformCounts[d.Platform] || 0) + 1
+        // d.sales = +d.EU_Sales;
       });
 
+      console.log(platformCounts)
+
       // Scale the range of the data in the domains
-      x.domain(data.map(function(d) { return d.salesperson; }));
-      y.domain([0, d3.max(data, function(d) { return d.sales; })]);
+      x.domain(Object.keys(platformCounts))
+      y.domain([0, d3.max(Object.keys(platformCounts), function(platform) { return platformCounts[platform] })]);
 
       // append the rectangles for the bar chart
       svg.selectAll(".bar")
