@@ -98,7 +98,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
 
     // // Create the scatter variable: where both the circles and the brush take place
     var areaChart = svg.append('g')
-    // .attr("clip-path", "url(#clip)")
+    .attr("clip-path", "url(#clip)")
 
     // // Area generator
     var area = d3.area()
@@ -151,7 +151,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         if (!clickSelecting) {
             // console.log(d)
             // console.log("." + d.y.__data__)
-            console.log("." + d.target.__data__)
+            // console.log("." + d.target.__data__)
             // reduce opacity of all groups
             d3.selectAll(".myArea").transition().style("opacity", .2)
             d3.select("." + d.target.__data__).transition().style("opacity", 1)
@@ -175,6 +175,38 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
     }
 
     //////////
+    // BUTTON //
+    //////////
+
+    // add button
+    d3.select('#stacked_viz')
+        .append("input") 
+        .attr("type", "button")
+        .attr("class", "button")
+        .attr("value", "Reset")
+        .on('click', () => {
+            clickSelecting = false
+            genresSelected = []
+            // reset all opacities
+            d3.selectAll(".myArea").transition().duration(1250).style("opacity", .75)
+
+            // // delete text
+            // d3.selectAll('.selected')
+            //     .text('None')
+            //     .style('color', 'black')
+        })
+
+    // document.getElementById('one').appendChild(areaChart.node())
+
+    // d3.select('#one')
+    //     .append('h1')
+    //     .attr('id', 'selected')
+    //     .attr('class', 'selected')
+    //     .style('font-family', 'sans-serif')
+    //     .text('None')
+    //     .style('color', 'black')
+
+    //////////
     // LEGEND //
     //////////
 
@@ -190,7 +222,6 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         .attr("height", size)
         .style("fill", function (d) { return color(d) })
         .on("mouseover", highlight)
-        // .on("mouseover", d3.selectAll(".myArea").transition().style("opacity", 1))
         .on("mouseout", noHighlight)
         .on("click", genreChoice)
 
@@ -206,7 +237,6 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         .attr("text-anchor", "left")
         .style("alignment-baseline", "middle")
         .on("mouseover", highlight)
-        // .on("mouseover", d3.selectAll(".myArea").transition().style("opacity", 1))
         .on("mouseout", noHighlight)
         .on("click", genreChoice)
 
