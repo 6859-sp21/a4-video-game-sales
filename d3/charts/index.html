@@ -1,22 +1,36 @@
 <!DOCTYPE html>
 <html>
+
 <head>
+    <!-- Load d3.js -->
+    <script src="https://d3js.org/d3.v6.js"></script>
+
+    <!-- Include css -->
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+
+    <!-- Set the title -->
     <title>A4 Video Games</title>
 </head>
+
 <body>
 
-<script src='https://d3js.org/d3.v6.min.js'></script>
-<!-- <script src='https://d3js.org/d3.v4.min.js'></script> -->
-<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
 
-<!-- <script src="index.js"></script>  -->
-<!-- <div id="my_dataviz"></div>
-<script src="bar_chart.js"></script> -->
+    <div class="rows">
+        <!-- <div id="one" style="width: 1000px; height: auto;"> -->
+        <div id="stacked_viz_button">
+            <!-- This is where we will put our first bar chart. -->
+        </div>
+        <div id="stacked_viz" style="width: 1000px; height: auto;">
+            <!-- This is where we will put our first bar chart. -->
+        </div>
+        <div id="publisher_bar_viz" style="width: 1000px; height: auto;">
+            <!-- This is where we will put our bubble chart. -->
+        </div>
+    </div>
 
-<div id="stacked_viz"></div>
-
-<script src="stacked_chart.js"></script>
-<!-- <script src="og_stack.js"></script> -->
+    <script src="stacked_chart.js"></script>
+    <!-- <script src="og_stack.js"></script> -->
 
 </body>
+
 </html>
