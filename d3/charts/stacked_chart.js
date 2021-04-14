@@ -224,7 +224,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         // Add brushing
         var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
             .extent([[0, 0], [width, height]]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-            .on("end", updateChart) // Each time the brush selection changes, trigger the 'updateChart' function
+            .on("brush", updateChart) // Each time the brush selection changes, trigger the 'updateChart' function
 
         // // Create the scatter variable: where both the circles and the brush take place
         var areaChart = svg.append('g')
@@ -257,26 +257,31 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         var idleTimeout
         function idled() { idleTimeout = null; }
 
+
+        // function brushed({selection}) {
+        //     let value = [];
+        //     if (selection) {
+        //       const [[x0, y0], [x1, y1]] = selection;
+        //       value = dot
+        //         .style("stroke", "gray")
+        //         .filter(d => x0 <= x(d.x) && x(d.x) < x1 && y0 <= y(d.y) && y(d.y) < y1)
+        //         .style("stroke", "steelblue")
+        //         .data();
+        //     } else {
+        //       dot.style("stroke", "steelblue");
+        //     }
+        //     svg.property("value", value).dispatch("input");
+        //   }
+
         // A function that update the chart for given boundaries
-        function updateChart() {
-
-            extent = d3.event.selection
-
-            // If no selection, back to initial coordinate. Otherwise, update X axis domain
-            if (!extent) {
-                if (!idleTimeout) return idleTimeout = setTimeout(idled, 350); // This allows to wait a little bit
-                x.domain(d3.extent(data, function (d) { return d.year; }))
-            } else {
-                x.domain([x.invert(extent[0]), x.invert(extent[1])])
-                areaChart.select(".brush").call(brush.move, null) // This remove the grey brush area as soon as the selection has been done
-            }
-
-            // Update axis and area position
-            xAxis.transition().duration(1000).call(d3.axisBottom(x).ticks(5))
-            areaChart
-                .selectAll("path")
-                .transition().duration(1000)
-                .attr("d", area)
+        function updateChart({selection}) {
+            // if (!d3.sourceEvent) return;
+            if (!selection){
+                return
+            } ; // Only transition after input.
+          
+            console.log(x.invert(selection[0]), x.invert(selection[1]))
+          
         }
 
 

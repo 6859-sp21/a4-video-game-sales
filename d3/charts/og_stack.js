@@ -128,6 +128,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
     function updateChart() {
 
         extent = d3.event.selection
+        console.log(extent)
 
         // If no selection, back to initial coordinate. Otherwise, update X axis domain
         if (!extent) {
