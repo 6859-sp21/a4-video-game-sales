@@ -1,8 +1,8 @@
 
 // set the dimensions and margins of the graph
 var margin = { top: 60, right: 230, bottom: 50, left: 100 },
-    width = 660 - margin.left - margin.right,
-    height = 400 - margin.top - margin.bottom;
+    width = 1000 - margin.left - margin.right,
+    height = 750 - margin.top - margin.bottom;
 
 // append the svg object to the body of the page
 var svg = d3.select("#stacked_viz")
@@ -14,38 +14,7 @@ var svg = d3.select("#stacked_viz")
         "translate(" + margin.left + "," + margin.top + ")");
 
 // Parse the Data
-// https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv
-// d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv",
-d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv",
-    // function (d) {
-    //     // return {
-    //     //     Rank: d.Rank,
-    //     //     Name: d.Name,
-    //     //     Platform: d.Platform,
-    //     //     Year: d.Year,
-    //     //     Genre: d.Genre,
-    //     //     Publisher: d.Publisher,
-    //     //     NA_Sales: d.NA_Sales,
-    //     //     EU_Sales: d.EU_Sales,
-    //     //     JP_Sales: d.JP_Sales,
-    //     //     Other_Sales: d.Other_Sales,
-    //     //     Global_Sales: d.Global_Sales
-    //     // };
-    //     return {
-    //         Rank: +d.Rank,
-    //         Name: d.Name,
-    //         Platform: d.Platform,
-    //         Year: +d.Year,
-    //         Genre: d.Genre,
-    //         Publisher: d.Publisher,
-    //         NA_Sales: +d.NA_Sales,
-    //         EU_Sales: +d.EU_Sales,
-    //         JP_Sales: +d.JP_Sales,
-    //         Other_Sales: +d.Other_Sales,
-    //         Global_Sales: +d.Global_Sales
-    //     };
-    // })
-    ).then((data) => {
+d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv").then((data) => {
 
     var keys = data.columns.slice(2);
     console.log(keys)
@@ -54,103 +23,9 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         // GENERAL //
         //////////
 
-        var genreColorScheme = [
-            "#66c2a5",
-            "#fc8d62",
-            "#8da0cb",
-            "#e78ac3",
-            "#a6d854",
-            "#ffd92f",
-            "#e5c494",
-            "#b3b3b3",
-            "#9058d2",
-            "#dc5a44",
-            "#78d3d8",
-            "#48932e"];
+        var genreColorScheme = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab", "#882020", "#a3d677"];
 
         console.log(data.length);
-        // console.log(d3.schemeSet2);
-        // console.log(data);
-        // console.log(data[0]);
-
-        // var genreNames = new Set();
-        // data.forEach(d => {
-        //     genreNames.add(d.Genre);
-        // });
-
-        // List of Genres
-        // var keys = data.columns.slice(1);
-        // var keys = Array.from(genreNames).sort();
-        // console.log(keys);
-
-        // var uYears = [1980, 1981, 1982, 1983, 1984, 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017];
-
-        // for (let y in uYears) {
-        //     genre_sales_for_year = {};
-        //     var cur_year = uYears[y];
-        //     // console.log(uYears[y]);listData = data.filter(d => d.Year === 2005)
-        //     var data_for_year = data.filter(d => d.Year === )
-        //     for (let g in genres) {
-                
-        //     }
-        // }
-
-        // var nested = d3.nest().key(function(d) {
-        //     return d.Genre;
-        // }).rollup(function(leaves) {
-        //     return d3.sum(leaves, function(d) {
-        //         return d.Global_Sales;
-        //     });
-        // }).entries(data.filter(d => d.Year === 2005));
-
-        // var filt = data.filter(d => d.Year === 2005);
-        // var grouped = d3.group(data, d => d.Year, d => d.Genre);
-        // var grouped = Array.from(d3.rollup(data, v => d3.sum(v, function(g){return g.Global_Sales}), d => d.Year, d => d.Genre), ([key, value]) => ({key, value}));
-
-        // const flat = grouped.map(d => {
-        //     const res = {}
-        //     res['year'] = d.key
-        //     // console.log(d.value);
-        //     keys.forEach(genre => {
-        //         // console.log('gen', genre);
-        //         // console.log('d.value entry', d.value.get(genre));
-        //         // console.log('is it there', genre in d.value);
-        //         if (d.value.get(genre)){
-        //             // console.log("Hello");
-        //             res[genre] = d.value.get(genre);
-        //         }
-        //         else {
-        //             // console.log("Goodbye");
-        //             res[genre] = 0;
-        //         }
-        //     })
-            
-        //     // d.value.forEach((val, genre) => {
-        //     //     res[genre] = val
-        //     //     // res[genre] = d.value[genre]
-        //     // })
-        //     // genreNames.forEach(genre => {
-        //     //     if (! (genre in res)){
-        //     //         res[genre] = 0
-        //     //     }
-        //     // })
-        //     // console.log(res);
-        //     // console.log(Array.from(res));
-        //     // console.log(res.sort((a,b) => b-a));
-        //     return res
-        // })
-        
-        // const flat = grouped.map(d => ({
-        //     year: d.key,
-        //     ... d.value
-        //     // Sports: , "Platform", "Racing", "Role-Playing", "Puzzle", "Misc", "Shooter", "Simulation", "Action", "Fighting", "Adventure", "Strategy"
-
-        // }))
-        // console.log(grouped);
-
-        // console.log('keys', keys);
-        // console.log('flat', flat);
-
 
         // color palette
         var color = d3.scaleOrdinal()
@@ -161,17 +36,11 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         var stackedData = d3.stack()
         .keys(keys)
         (data)
-        // var stackedData = d3.stack()
-        //     .keys(keys)
-        //     (flat)
 
-        console.log(data)
-        console.log(keys)
-        console.log(stackedData)
+        // console.log(data)
+        // console.log(keys)
+        // console.log(stackedData)
         
-
-
-
         //////////
         // AXIS //
         //////////
@@ -246,6 +115,7 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
                 console.log("myArea " + d.key )
                 return "myArea " + d.key })
             .style("fill", function (d) { return color(d.key); })
+            .style("opacity", .5)
             .attr("d", area)
 
         // Add the brushing
@@ -257,22 +127,6 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
         var idleTimeout
         function idled() { idleTimeout = null; }
 
-
-        // function brushed({selection}) {
-        //     let value = [];
-        //     if (selection) {
-        //       const [[x0, y0], [x1, y1]] = selection;
-        //       value = dot
-        //         .style("stroke", "gray")
-        //         .filter(d => x0 <= x(d.x) && x(d.x) < x1 && y0 <= y(d.y) && y(d.y) < y1)
-        //         .style("stroke", "steelblue")
-        //         .data();
-        //     } else {
-        //       dot.style("stroke", "steelblue");
-        //     }
-        //     svg.property("value", value).dispatch("input");
-        //   }
-
         // A function that update the chart for given boundaries
         function updateChart({selection}) {
             // if (!d3.sourceEvent) return;
@@ -281,34 +135,43 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             } ; // Only transition after input.
           
             console.log(x.invert(selection[0]), x.invert(selection[1]))
-          
         }
-
 
 
         //////////
         // HIGHLIGHT GROUP //
         //////////
 
+        var clickSelecting = false
+        var genresSelected = []
+
         // What to do when one group is hovered
         var highlight = function (d) {
-            console.log(d)
-            // console.log("." + d.y.__data__)
-            console.log("." + d.target.__data__)
-            // reduce opacity of all groups
-            d3.selectAll(".myArea").style("opacity", .1)
-            // expect the one that is hovered
-            // d3.select("." + d).style("opacity", 1)
-            // d3.select(".myArea " + d).style("opacity", 1)
-            d3.select("." + d.target.__data__).style("opacity", 1)
+            if (!clickSelecting) {
+                // console.log(d)
+                // console.log("." + d.y.__data__)
+                console.log("." + d.target.__data__)
+                // reduce opacity of all groups
+                d3.selectAll(".myArea").style("opacity", .5)
+                d3.select("." + d.target.__data__).transition().duration(10).style("opacity", .75)
+            }
         }
 
         // And when it is not hovered anymore
         var noHighlight = function (d) {
-            d3.selectAll(".myArea").style("opacity", 1)
+            if (!clickSelecting) {
+                d3.selectAll(".myArea").style("opacity", .5)
+            }
         }
 
-
+        var genreChoice = function (d) {
+            // reduce opacity of all groups
+            clickSelecting = true
+            genresSelected.push("." + d.target.__data__)
+            // Write functions to handle logic checking selected genre against other genres for fading
+            d3.selectAll(".myArea").transition().duration(1000).style("opacity", .1)
+            d3.select("." + d.target.__data__).transition().duration(10).style("opacity", 1)
+        }
 
         //////////
         // LEGEND //
@@ -320,20 +183,24 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             .data(keys)
             .enter()
             .append("rect")
-            .attr("x", 400)
+            .attr("x", width)
             .attr("y", function (d, i) { return 10 + i * (size + 5) }) // 100 is where the first dot appears. 25 is the distance between dots
             .attr("width", size)
             .attr("height", size)
             .style("fill", function (d) { return color(d) })
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
+            .on("click", genreChoice)
+            // .on("mouseleave", highlightReset)
+            // .on("mouseover", highlight)
+            // .on("mouseout", noHighlight)
 
         // // Add one dot in the legend for each name.
         svg.selectAll("mylabels")
             .data(keys)
             .enter()
             .append("text")
-            .attr("x", 400 + size * 1.2)
+            .attr("x", width + size * 1.2)
             .attr("y", function (d, i) { return 10 + i * (size + 5) + (size / 2) }) // 100 is where the first dot appears. 25 is the distance between dots
             .style("fill", function (d) { return color(d) })
             .text(function (d) { return d })
@@ -341,5 +208,8 @@ d3.csv("https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/agg
             .style("alignment-baseline", "middle")
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
+            .on("click", genreChoice)
+            // .on("mouseover", highlight)
+            // .on("mouseout", noHighlight)
 
     })
