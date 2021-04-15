@@ -318,7 +318,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                 .style("left", d.x + 90 + "px")
                 .style("top", d.y + 90 + "px")
                 .style("opacity", 1)
-                .html("Global Sales: " + d.value.toFixed(1) + " Million USD")
+                // .html("Global Sales: " + d.value.toFixed(1) + " Million USD")
                 .html(formTooltipString(d.value.toFixed(1)))
                 .transition()
         }
@@ -380,7 +380,12 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
                             .attr('font-size', '8px')
                             .text(d => d.data.name)
-                            .call(wrap, 100)
+                            .call(wrap, 69)
+                            // .call(wrap, d => 
+                            //     {
+                            //         console.log("gooch",d)
+                            //         d.r-10
+                            //     })
                             .on('mouseover', (event, d) => {
                                 bubbleMouseOver(d)
                             })
@@ -410,7 +415,12 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
                             .attr('font-size', '8px')
                             .text(d => d.data.name)
-                            .call(wrap, 100)
+                            .call(wrap, 69)
+                            // .call(wrap, d => 
+                            //     {
+                            //         console.log("gooch",d)
+                            //         d.r-10
+                            //     })
                         .on('mouseover', (event, d) => {
                             bubbleMouseOver(d)
                         })
