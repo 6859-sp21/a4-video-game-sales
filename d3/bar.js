@@ -1,5 +1,38 @@
 const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv'
 
+function wrap(text, width) {
+  text.each(function () {
+      var text = d3.select(this),
+          words = text.text().split(/\s+/).reverse(),
+          word,
+          line = [],
+          lineNumber = 0,
+          lineHeight = 1.1, // ems
+          x = text.attr("x"),
+          y = text.attr("y"),
+          dy = 0, //parseFloat(text.attr("dy")),
+          tspan = text.text(null)
+                      .append("tspan")
+                      .attr("x", x)
+                      .attr("y", y)
+                      .attr("dy", dy + "em");
+      while (word = words.pop()) {
+          line.push(word);
+          tspan.text(line.join(" "));
+          if (tspan.node().getComputedTextLength() > width) {
+              line.pop();
+              tspan.text(line.join(" "));
+              line = [word];
+              tspan = text.append("tspan")
+                          .attr("x", x)
+                          .attr("y", y)
+                          .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                          .text(word);
+          }
+      }
+  });
+}
+
 const barChart = ({data, chartKey, x, y, isClickable, onMouseOver, onMouseLeave, onClick}) => {
   // bar chart time!
   // first, some housekeeping
@@ -122,8 +155,164 @@ d3.csv(dataUrl, d3.autoType).then(data => {
   // aggregate
   let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
   
-  // publisher chart
+  const width = 800
+  const height = 800
+
+  // pack the data
+  const pack = data => d3.pack()
+    .size([width - 2, height - 2])
+    .padding(3)
+  (d3.hierarchy({children: data})
+    .sum(d => d.value))
+  
+  // set up elements
+  const svg = d3.create('svg')
+    .attr('viewBox', [0, 0, width, height])
+    .attr('font-size', 12)
+    .attr('font-family', 'sans-serif')
+    .attr('text-anchor', 'middle')
+  
+  
+  
+  document.getElementById('bubble').appendChild(svg.node())
+
   let selectedPublisher = null
+
+  const dataJoinBubbleChart = () => {
+    // filter test
+    const dataFilt = data.filter(d => !selectedPublisher || (d.Publisher == selectedPublisher.name))
+    const gameSalesData = sumByCol(dataFilt, 'Name', 'Global_Sales')
+
+    // color by name
+    const color = d3.scaleOrdinal(gameSalesData.map(d => d.name), d3.schemeSet3)
+
+    // repack and run
+    const root = pack(gameSalesData)
+    const leaves = root.leaves()
+    console.log(leaves, 'leaves')
+
+    const t = svg.transition()
+    .duration(750);
+
+    const leaf = svg.selectAll('g')
+      .data(leaves)
+      .join(
+        enter => {
+          enter = enter.append('g')
+          .call(enter => enter.transition(t)
+            .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`))
+          
+            enter.append('circle')
+            .attr("r", d => d.r)
+            .attr("fill-opacity", 0.7)
+            .attr("fill", d => color(d.data.name))
+          
+            enter.append("clipPath")
+        // .attr("id", d => (d.clipUid = DOM.uid("clip")).id)
+      .append("use")
+        // .attr("xlink:href", d => d.leafUid.href);
+          
+          enter.append("text")
+            // .attr("clip-path", d => d.clipUid)
+          .selectAll("tspan")
+          .data(d => d)
+          // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+          .join("tspan")
+            .attr("x", 0)
+            .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+            .attr('font-size', '16px')
+            .text(d => d.data.name)
+            .call(wrap, 100)
+          
+          return enter
+        },
+        update => {
+          update
+            .call(update => update.transition(t)
+              .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`))
+          
+          update.select('circle')
+          .call(update => update.transition(t)
+              .attr("r", d => d.r)
+              .attr("fill-opacity", 0.7)
+              .attr("fill", d => color(d.data.name)))
+            
+              update.select("text")
+              
+              // .attr("clip-path", d => d.clipUid)
+            .selectAll("tspan")
+            .data(d => d)
+            // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+            .join("tspan")
+             
+              .attr("x", 0)
+              .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+              .attr('font-size', '16px')
+              .text(d => d.data.name)
+              .call(wrap, 100)
+            },
+        exit => exit.remove()
+    )
+
+    console.log(svg.selectAll('g'), 'ooo')
+    console.log(leaf)
+    
+    // leaf
+    //   .data(leaves, d => {console.log(d, 'jack'); return d;})
+    //   .join(
+    //     enter => enter.append('circle')
+    //   )
+          // .append('circle')
+          // .attr("r", d => d.r)
+          // .attr("fill-opacity", 0.7)
+          // .attr("fill", d => color(d.data.name))
+      // .attr("id", d => (d.leafUid = DOM.uid("leaf")).id)
+      // .data(leaves, d => d.data.name)
+      // .join(
+      //   enter => enter.append('circle')
+            
+      //       .attr("r", d => d.r)
+      //       .attr("fill-opacity", 0.7)
+      //       .attr("fill", d => {console.log(d, '!!!'); return color(d.data.name)})
+      //     .call(enter => enter.transition(t)
+            
+      //     ).call(enter => console.log(enter, '!!!dlfjsl')),
+      //   update => update
+          
+      //     .attr("r", d => d.r)
+      //     .attr("fill-opacity", 0.7)
+      //     .attr("fill", d => color(d.data.name))
+      //     .call(update => update.transition(t)
+      //     .call(update => console.log(update))
+      //   ),
+      //   exit => exit.remove()
+      //       )
+
+    // leaf.append("clipPath")
+    //     // .attr("id", d => (d.clipUid = DOM.uid("clip")).id)
+    //   .append("use")
+    //     // .attr("xlink:href", d => d.leafUid.href);
+
+    // leaf.append("text")
+    //     // .attr("clip-path", d => d.clipUid)
+    //   .selectAll("tspan")
+    //   .data(d => d)
+    //   // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+    //   .join("tspan")
+    //     .attr("x", 0)
+    //     .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
+    //     .attr('font-size', '16px')
+    //     .text(d => d.data.name)
+    //     .call(wrap, 100)
+
+    // leaf.append("title")
+    //     .text(d => `${d.data.title === undefined ? "" : `${d.data.title}
+    //       `}${d.value}`);
+  }
+
+  dataJoinBubbleChart()
+  
+  // publisher chart
   const publisherOnMouseOver = d => {
     d3.selectAll('.bar-publisher')
       .transition()
@@ -156,6 +345,7 @@ d3.csv(dataUrl, d3.autoType).then(data => {
     d3.selectAll('.bar')
       .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
       .style('opacity', 0.3)
+    dataJoinBubbleChart()
   }
   const { svg: publisherChart, colorScale } = barChart({
     data: publisherSalesData,
@@ -175,18 +365,22 @@ d3.csv(dataUrl, d3.autoType).then(data => {
     .attr("class", "button")
     .attr("value", "Reset")
     .on('click', () => {
-      selectedPublisher = null
-      selectedGame = null
-      // reset all opacities
-      d3.selectAll('.bar-publisher,.bar-game')
-        .transition()
-        .delay(100)
-        .style('opacity', 1)
-      
-      // delete text
-      d3.selectAll('.selected')
-        .text('None')
-        .style('color', 'black')
+      if (selectedPublisher) {
+        selectedPublisher = null
+        // reset all opacities
+        d3.selectAll('.bar-publisher,.bar-game')
+          .transition()
+          .delay(100)
+          .style('opacity', 1)
+        
+        // delete text
+        d3.selectAll('.selected')
+          .text('None')
+          .style('color', 'black')
+        
+        // re-join
+        dataJoinBubbleChart()
+      }
     })
   
   document.getElementById('one').appendChild(publisherChart.node())

@@ -1,13 +1,13 @@
 d3.csv(dataUrl, d3.autoType).then(data => {
   
   
-  const width = 400
-  const height = 400
+  const width = 800
+  const height = 800
 
   // pack the data
   const pack = data => d3.pack()
     .size([width - 2, height - 2])
-    .padding(3)
+    .padding(1)
   (d3.hierarchy({children: data})
     .sum(d => d.value))
   
@@ -44,20 +44,21 @@ d3.csv(dataUrl, d3.autoType).then(data => {
 
       // repack and run
       const root = pack(gameSalesData)
-      console.log(root.leaves())
 
       const t = svg.transition()
         .duration(750);
       
       const leaf = svg.selectAll('g')
-        .data(root.leaves(), d => d)
+        .data(root.leaves(), d => d.data.name)
         .join(
           enter => enter.append('g')
             .call(enter => enter.transition(t)
               .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`)),
-          update => update.call(enter => enter.transition(t)
-              .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`)),
-          exit => exit.call(exit => exit.transition(t).remove())
+          update => update
+              .call(update => update.transition(t)
+                .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`)),
+          exit => exit
+                .call(exit => exit.remove())
         )
       
       leaf.append("circle")
@@ -70,15 +71,51 @@ d3.csv(dataUrl, d3.autoType).then(data => {
           // .attr("id", d => (d.clipUid = DOM.uid("clip")).id)
         .append("use")
           // .attr("xlink:href", d => d.leafUid.href);
+      
+      function wrap(text, width) {
+          text.each(function () {
+              var text = d3.select(this),
+                  words = text.text().split(/\s+/).reverse(),
+                  word,
+                  line = [],
+                  lineNumber = 0,
+                  lineHeight = 1.1, // ems
+                  x = text.attr("x"),
+                  y = text.attr("y"),
+                  dy = 0, //parseFloat(text.attr("dy")),
+                  tspan = text.text(null)
+                              .append("tspan")
+                              .attr("x", x)
+                              .attr("y", y)
+                              .attr("dy", dy + "em");
+              while (word = words.pop()) {
+                  line.push(word);
+                  tspan.text(line.join(" "));
+                  if (tspan.node().getComputedTextLength() > width) {
+                      line.pop();
+                      tspan.text(line.join(" "));
+                      line = [word];
+                      tspan = text.append("tspan")
+                                  .attr("x", x)
+                                  .attr("y", y)
+                                  .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                                  .text(word);
+                  }
+              }
+          });
+      }
 
       leaf.append("text")
           // .attr("clip-path", d => d.clipUid)
         .selectAll("tspan")
-        .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
+        .data(d => d)
+        // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
         .join("tspan")
           .attr("x", 0)
           .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-          .text(d => d);
+          .attr('font-size', '16px')
+          .text(d => d.data.name)
+          .call(wrap, 100)
 
       leaf.append("title")
           .text(d => `${d.data.title === undefined ? "" : `${d.data.title}

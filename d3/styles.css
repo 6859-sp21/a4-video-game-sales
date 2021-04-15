@@ -1,6 +1,6 @@
-.rows {
+.cols {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
 }
 
 /* .bar:hover {
