@@ -214,8 +214,6 @@ d3.csv(genreDataUrl).then((genreData) => {
             // filter test
             const margin = ({ top: 100, right: 300, bottom: 100, left: 500 })
 
-            console.log(publisherSalesData)
-
             bar_xScale.domain([0, d3.max(publisherSalesData, d => d[x])])
 
             bar_yScale.domain(d3.range(publisherSalesData.length))
@@ -332,7 +330,6 @@ d3.csv(genreDataUrl).then((genreData) => {
         }
 
         const dataJoinBubbleChart = () => {
-            console.log("DJBC")
             // filter test
             const dataFiltBubble = dataFilt.filter(d => !selectedPublisher || (d.Publisher == selectedPublisher.name))
             const gameSalesData = sumByCol(dataFiltBubble, 'Name', 'Global_Sales')

@@ -1,0 +1,8 @@
+.cols {
+    display: flex;
+    flex-direction: row;
+}
+
+/* .bar:hover {
+    opacity: 1;
+} */
