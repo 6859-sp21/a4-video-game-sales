@@ -14,7 +14,7 @@ function wrap(text, width) {
             lineHeight = 1.1, // ems
             x = text.attr("x"),
             y = text.attr("y"),
-            dy = 0, 
+            dy = 0,
             tspan = text.text(null)
                 .append("tspan")
                 .attr("x", x)
@@ -299,6 +299,34 @@ d3.csv(genreDataUrl).then((genreData) => {
 
         document.getElementById('bubble').appendChild(svgBubble.node())
 
+        var bubbleTooltip = d3.select("#bubble")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "1px")
+            .style("border-radius", "5px")
+            .style("padding", "10px")
+
+
+        const bubbleMouseOver = d => {
+            // console.log('d-mouseover', d)
+            console.log(`translate(${d.x + 90}, ${(d.y + 90)})`)
+            bubbleTooltip
+                .attr("transform", `translate(${d.x + 90}, ${(d.y + 90)})`)
+                .style("opacity", 1)
+                .html("Global Sales: " + d.value.toFixed(1) + " Million USD")
+                .transition()
+        }
+
+        const bubbleMouseLeave = d => {
+            // console.log('d-mouseleave', d)
+            bubbleTooltip
+                .transition()
+                .duration(1200)
+                .style("opacity", 0)
+        }
 
         const dataJoinBubbleChart = () => {
             // filter test
@@ -326,28 +354,33 @@ d3.csv(genreDataUrl).then((genreData) => {
                         enter = enter.append('g')
                             .call(enter => enter.transition(t)
                                 .attr('transform', d => `translate(${d.x + 1}, ${d.y + 1})`))
+                            .on('mouseleave', (event, d) => {
+                                bubbleMouseLeave(d)
+                            })
 
                         enter.append('circle')
                             .attr("r", d => d.r)
                             .attr("fill-opacity", 0.7)
                             .attr("fill", d => color(d.data.name))
+                            .on('mouseover', (event, d) => {
+                                bubbleMouseOver(d)
+                            })
 
                         enter.append("clipPath")
-                            // .attr("id", d => (d.clipUid = DOM.uid("clip")).id)
                             .append("use")
-                        // .attr("xlink:href", d => d.leafUid.href);
 
                         enter.append("text")
-                            // .attr("clip-path", d => d.clipUid)
                             .selectAll("tspan")
                             .data(d => d)
-                            // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
                             .join("tspan")
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
                             .attr('font-size', '8px')
                             .text(d => d.data.name)
                             .call(wrap, 100)
+                            .on('mouseover', (event, d) => {
+                                bubbleMouseOver(d)
+                            })
 
                         return enter
                     },
@@ -361,20 +394,23 @@ d3.csv(genreDataUrl).then((genreData) => {
                                 .attr("r", d => d.r)
                                 .attr("fill-opacity", 0.7)
                                 .attr("fill", d => color(d.data.name)))
+                        // .on('mouseover', (event, d) => {
+                        //     bubbleMouseOver(d)
+                        // })
 
                         update.select("text")
-
-                            // .attr("clip-path", d => d.clipUid)
                             .selectAll("tspan")
                             .data(d => d)
-                            // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
                             .join("tspan")
 
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-                            .attr('font-size', '16px')
+                            .attr('font-size', '8px')
                             .text(d => d.data.name)
                             .call(wrap, 100)
+                        // .on('mouseover', (event, d) => {
+                        //     bubbleMouseOver(d)
+                        // })
                     },
                     exit => exit.remove()
                 )
@@ -525,11 +561,14 @@ d3.csv(genreDataUrl).then((genreData) => {
         // A function that update the chart for given boundaries
         function updateChart({ selection }) {
             if (!selection) {
-                return
+                startYear = defaultStartYear
+                endYear = defaultEndYear
+
+            } else {
+                // USED FOR VARIABLES IN LATERS GRAPHS (YEARS SELECTED)
+                startYear = Math.round(x.invert(selection[0]));
+                endYear = Math.round(x.invert(selection[1]));
             }
-            // USED FOR VARIABLES IN LATERS GRAPHS (YEARS SELECTED)
-            startYear = Math.round(x.invert(selection[0]));
-            endYear = Math.round(x.invert(selection[1]));
 
             // Update Bar Chart
             dataJoinBarChart()
@@ -621,6 +660,9 @@ d3.csv(genreDataUrl).then((genreData) => {
                 selectedGenres = []
                 startYear = defaultStartYear
                 endYear = defaultEndYear
+                areaChart.select('.brush').call(brush.clear);
+
+                // svg.selectAll(".brush").call(brush)
                 dataJoinBarChart()
                 dataJoinBubbleChart()
                 // reset all opacities
