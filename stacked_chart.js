@@ -1,8 +1,13 @@
 const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv'
 const genreDataUrl = "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv"
 
-const width = 600
+const width = 900
 const height = 400
+
+const bubbleWidth = 800
+const bubbleHeight = 800
+
+const bubbleWrapWidth = 100
 
 function wrap(text, width) {
     text.each(function () {
@@ -11,7 +16,7 @@ function wrap(text, width) {
             word,
             line = [],
             lineNumber = 0,
-            lineHeight = 1.1, // ems
+            lineHeight = 1, // ems
             x = text.attr("x"),
             y = text.attr("y"),
             dy = 0,
@@ -81,7 +86,7 @@ function formTooltipString(value) {
 
 // pack the data
 const pack = data => d3.pack()
-    .size([width - 2, height - 2])
+    .size([bubbleWidth - 2, bubbleHeight - 2])
     .padding(3)
     (d3.hierarchy({ children: data })
         .sum(d => d.value))
@@ -90,7 +95,7 @@ const pack = data => d3.pack()
 d3.csv(genreDataUrl).then((genreData) => {
     d3.csv(dataUrl, d3.autoType).then(data => {
 
-        const margin = ({ top: 100, right: 300, bottom: 100, left: 500 })
+        const margin = ({ top: 100, right: 150, bottom: 100, left: 100 })
 
         const defaultStartYear = 1980
         const defaultEndYear = 2020
@@ -132,9 +137,16 @@ d3.csv(genreDataUrl).then((genreData) => {
         // aggregate
         let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
 
-        const marginBar = { left: 250, right: 0, top: 150, bottom: 0 }
-        const svgBar = d3.create('svg')
-            .attr('viewBox', [0, 0, width, height])
+        const marginBar = { left: 200, right: 20, top: 75, bottom: 10 }
+        const svgBar = d3.select("#publisher_bar_viz")
+            .append("svg")
+            .attr("width", width + marginBar.left + marginBar.right)
+            .attr("height", height + marginBar.top + marginBar.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + marginBar.left + "," + marginBar.top + ")");
+        // const svgBar = d3.create('svg')
+        //     .attr('viewBox', [0, 0, width, height])
 
         var bar_xScale = d3.scaleLinear()
             .domain([0, d3.max(publisherSalesData, d => d[x])])
@@ -157,12 +169,37 @@ d3.csv(genreDataUrl).then((genreData) => {
         svgBar.append('g')
             .attr('transform', `translate(${marginBar.left - 5}, 0)`)
             .attr('class', 'y axis');
+        // Add title
+        svgBar.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '40%')
+            .attr("y", -30)
+            .attr("font-family", "monospace")
+            .attr("font-size", '24px')
+            .text("Top 10 Game Publishers")
+        
+        svgBar.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '40%')
+            .attr("y", -10)
+            .attr("font-family", "monospace")
+            .attr("font-size", '16px')
+            .text("Global Sales, by Publisher (USD, millions)")
+        
+            svgBar.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '-18%')
+            .attr("y", '-120')
+            .attr("font-family", "monospace")
+            .attr("font-size", '24px')
+            .attr("transform", "rotate(270)")
+            .text("Publisher Name")
 
 
 
 
 
-        document.getElementById('publisher_bar_viz').appendChild(svgBar.node())
+        // document.getElementById('publisher_bar_viz').appendChild(svgBar.node())
 
         // publisher chart
         const publisherOnMouseOver = d => {
@@ -211,9 +248,6 @@ d3.csv(genreDataUrl).then((genreData) => {
             })
             let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
 
-            // filter test
-            const margin = ({ top: 100, right: 300, bottom: 100, left: 500 })
-
             bar_xScale.domain([0, d3.max(publisherSalesData, d => d[x])])
 
             bar_yScale.domain(d3.range(publisherSalesData.length))
@@ -221,8 +255,6 @@ d3.csv(genreDataUrl).then((genreData) => {
             const colorScale = d3.scaleOrdinal()
                 .domain(publisherSalesData.map(d => d[y]))
                 .range(d3.schemeTableau10)
-
-            const format = bar_xScale.tickFormat(20, publisherSalesData.format)
 
             const tBar = svgBar.transition()
                 .duration(750);
@@ -273,29 +305,22 @@ d3.csv(genreDataUrl).then((genreData) => {
             svgBar.select('.x.axis')
                 .transition()
                 .duration(1000)
-                .call(bar_xaxis);
+                .call(bar_xaxis)
+                .style("font-family", "monospace")
+                .style("font-size", '16px')
 
             svgBar.select('.y.axis')
                 .transition()
                 .duration(1000)
                 .call(bar_yaxis
                     .tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
+                .style("font-family", "monospace")
+                .style("font-size", '16px')
         }
 
         dataJoinBarChart()
 
-        // set up elements
-        const svgBubble = d3.create('svg')
-            .attr('viewBox', [0, 0, width, height])
-            .attr('font-size', 12)
-            .attr('font-family', 'sans-serif')
-            .attr('text-anchor', 'middle')
-
-
-
-        var bubbleTooltip = 
-        // svgBubble
-        d3.select("#bubble")
+        var bubbleTooltip = d3.select("#bubble")
             .append("div")
             .style("opacity", 0)
             .attr("class", "tooltip")
@@ -305,8 +330,13 @@ d3.csv(genreDataUrl).then((genreData) => {
             .style("border-radius", "5px")
             .style("padding", "10px")
 
-        document.getElementById('bubble').appendChild(svgBubble.node())
-
+        const svgBubble = d3.select("#bubble")
+            .append("svg")
+            .attr("width", bubbleWidth)
+            .attr("height", bubbleHeight)
+            .attr('font-size', '16px')
+            .attr('font-family', 'monospace')
+            .attr('text-anchor', 'middle')
 
         const bubbleMouseOver = d => {
             // console.log('d-mouseover', d)
@@ -374,10 +404,10 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .data(d => d)
                             .join("tspan")
                             .attr("x", 0)
-                            .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-                            .attr('font-size', '8px')
+                            .attr("y", (d, i, nodes) => `${i - nodes.length / 2}em`)
+                            .attr('font-size', '16px')
                             .text(d => d.data.name)
-                            .call(wrap, 69)
+                            .call(wrap, bubbleWrapWidth)
                             // .call(wrap, d => 
                             //     {
                             //         console.log("gooch",d)
@@ -410,9 +440,9 @@ d3.csv(genreDataUrl).then((genreData) => {
 
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-                            .attr('font-size', '8px')
+                            .attr('font-size', '16px')
                             .text(d => d.data.name)
-                            .call(wrap, 69)
+                            .call(wrap, bubbleWrapWidth)
                             // .call(wrap, d => 
                             //     {
                             //         console.log("gooch",d)
@@ -457,7 +487,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .append('h1')
             .attr('id', 'selected')
             .attr('class', 'selected')
-            .style('font-family', 'sans-serif')
+            .style('font-family', 'monospace')
             .text('Top 10 Publishers')
             .style('color', 'black')
 
@@ -482,40 +512,58 @@ d3.csv(genreDataUrl).then((genreData) => {
         var x = d3.scaleLinear()
             .domain(d3.extent(genreData, function (d) { return d.year; }))
             .range([0, width]);
-        var xAxis = svg.append("g")
+        svg.append("g")
             .attr("transform", "translate(0," + height + ")")
-            .style("font-family", "sans-serif")
+            .style("font-family", "monospace")
             .style("font-size", '16px')
             .call(d3.axisBottom(x).ticks(5)
                 .tickFormat(i => i))
 
         // Add X axis label:
         svg.append("text")
-            .attr("text-anchor", "end")
-            .attr("x", width)
-            .attr("y", height + 40)
-            .attr("font-family", "sans-serif")
+            .attr("text-anchor", "middle")
+            .attr("x", '40%')
+            .attr("y", height + 50)
+            .attr("font-family", "monospace")
             .attr("font-size", 24)
-            .text("Year")
+            .text("Release Year")
 
         // Add Y axis
         var y = d3.scaleLinear()
             .domain([0, 700])
             .range([height, 0]);
         svg.append("g")
-            .style("font-family", "sans-serif")
+            .style("font-family", "monospace")
             .style("font-size", '16px')
             .call(d3.axisLeft(y).ticks(5))
 
-        // Add Y axis label:
+        // Add title
         svg.append("text")
-            .attr("text-anchor", "end")
-            .attr("x", 0)
-            .attr("y", -20)
-            .attr("font-family", "sans-serif")
-            .attr("font-size", 24)
-            .text("Global Sales of Video Games by Genre")
-            .attr("text-anchor", "start")
+            .attr("text-anchor", "middle")
+            .attr("x", '40%')
+            .attr("y", -30)
+            .attr("font-family", "monospace")
+            .attr("font-size", '24px')
+            .text("Global Sales of Video Games")
+        
+            svg.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '40%')
+            .attr("y", -10)
+            .attr("font-family", "monospace")
+            .attr("font-size", '16px')
+            .text("Sales to Date, by Genre")
+        
+        svg.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '-18%')
+            .attr("y", '-50')
+            .attr("font-family", "monospace")
+            .attr("font-size", '24px')
+            .attr("transform", "rotate(270)")
+            .text("USD (millions)")
+            
+            // .attr("text-anchor", "start")
 
         //////////
         // BRUSHING AND CHART //
@@ -732,7 +780,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .text(function (d) { return d })
             .attr("text-anchor", "left")
             .style("alignment-baseline", "middle")
-            .style('font-family', 'sans-serif')
+            .style('font-family', 'monospace')
             .style('cursor', 'pointer')
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
