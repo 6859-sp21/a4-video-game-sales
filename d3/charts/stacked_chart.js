@@ -37,86 +37,6 @@ function wrap(text, width) {
   });
 }
 
-const barChart = ({ data, chartKey, x, y, isClickable, onMouseOver, onMouseLeave, onClick }) => {
-  // bar chart time!
-  // first, some housekeeping
-  const margin = ({ top: 30, right: 30, bottom: 10, left: 500 })
-  const width = 1000
-  const height = 300
-  const xScale = d3.scaleLinear()
-    .domain([0, d3.max(data, d => d[x])])
-    .range([margin.left, width - margin.right])
-  const yScale = d3.scaleBand()
-    .domain(d3.range(data.length))
-    .rangeRound([margin.top, height - margin.bottom])
-    .padding(0.1)
-  const colorScale = d3.scaleOrdinal()
-    .domain(data.map(d => d[y]))
-    .range(d3.schemeTableau10)
-
-  const format = xScale.tickFormat(20, data.format)
-  const xAxis = g => g
-    .attr('transform', `translate(0, ${margin.top})`)
-    .call(d3.axisTop(xScale).ticks(width / 80, data.format))
-    .call(g => g.select('.domain').remove())
-  const yAxis = g => g
-    .attr('transform', `translate(${margin.left}, 0)`)
-    .call(d3.axisLeft(yScale).tickFormat(i => data[i].name).tickSizeOuter(0))
-
-  const svg = d3.create('svg')
-    .attr('viewBox', [0, 0, width, height])
-
-  svg.append('g')
-    .selectAll('rect')
-    .data(data)
-    .join('rect')
-    .attr('x', xScale(0))
-    .attr('y', (d, i) => yScale(i))
-    .attr('width', d => xScale(d.value) - xScale(0))
-    .attr('height', yScale.bandwidth())
-    .attr('fill', d => colorScale(d.name))
-    .attr('class', `bar-${chartKey}`)
-    .attr('id', d => `bar-${chartKey}-${d.index}`)
-    .on('mouseover', (e, d) => {
-      onMouseOver(d)
-    })
-    .on('mouseleave', (e, d) => {
-      onMouseLeave(d)
-    })
-    .on('click', (event, d) => {
-      onClick(d)
-    })
-
-  // add text labels to bar chart
-  svg.append("g")
-    .attr("fill", "white")
-    .attr("text-anchor", "end")
-    .attr("font-family", "sans-serif")
-    .attr("font-size", 12)
-    .selectAll("text")
-    .data(data)
-    .join("text")
-    .attr("x", d => xScale(d.value))
-    .attr("y", (d, i) => yScale(i) + yScale.bandwidth() / 2)
-    .attr("dy", "0.35em")
-    .attr("dx", -4)
-    .attr("font-weight", "bold")
-    .text(d => format(d.value))
-    .call(text => text.filter(d => xScale(d.value) - xScale(0) < 20) // short bars
-      .attr("dx", +4)
-      .attr("fill", "black")
-      .attr("text-anchor", "start"));
-
-  svg.append('g')
-    .call(xAxis)
-
-  svg.append('g')
-    .call(yAxis)
-    .style('font-size', '16px')
-
-  return { svg, colorScale }
-}
-
 const sumByCol = (data, groupCol, dataCol) => {
   const result = {}
   data.forEach(d => {
@@ -174,6 +94,8 @@ d3.csv(genreDataUrl).then((genreData) => {
     var endYear = defaultEndYear
     var genres = defaultGenres
 
+    let selectedPublisher = null
+
     // filter the data
     const dataFilt = data.filter(d => {
       return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
@@ -183,7 +105,135 @@ d3.csv(genreDataUrl).then((genreData) => {
     let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
 
     const svgBar = d3.create('svg')
-    .attr('viewBox', [0, 0, width, height])
+      .attr('viewBox', [0, 0, width, height])
+
+    document.getElementById('publisher_bar_viz').appendChild(svgBar.node())
+
+    // publisher chart
+    const publisherOnMouseOver = d => {
+      d3.selectAll('.bar')
+        .transition()
+      d3.selectAll('.bar')
+        .filter(d => !selectedPublisher || (selectedPublisher && selectedPublisher.index !== d.index))
+        .style('opacity', 0.3)
+      d3.selectAll(`#bar-${d.index}`)
+        .style('opacity', 1)
+        .style('cursor', 'pointer')
+    }
+    const publisherOnMouseLeave = d => {
+      d3.selectAll('.bar')
+        .transition()
+        .delay(100)
+        .style('opacity', 1)
+      if (selectedPublisher) {
+        d3.selectAll('.bar')
+          .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
+          .transition()
+          .delay(100)
+          .style('opacity', 0.3)
+      }
+    }
+    const publisherOnClick = (d, colorScale) => {
+      selectedPublisher = d
+      d3.selectAll('#selected')
+        .text(d.name)
+        .style('color', colorScale(selectedPublisher.name))
+        .text(selectedPublisher.name)
+      d3.selectAll('.bar')
+        .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
+        .style('opacity', 0.3)
+      dataJoinBubbleChart()
+    }
+
+    const dataJoinBarChart = () => {
+      const x = 'value'
+      const y = 'name'
+
+      const dataFilt = data.filter(d => {
+        return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
+      })
+      let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
+      // console.log(publisherSalesData, 'pubbbb')
+
+      // filter test
+      const margin = ({ top: 30, right: 30, bottom: 10, left: 500 })
+      // const width = 1000
+      // const height = 300
+
+      console.log(publisherSalesData)
+
+      const xScale = d3.scaleLinear()
+        .domain([0, d3.max(publisherSalesData, d => d[x])])
+        .range([margin.left, width - margin.right])
+
+      const yScale = d3.scaleBand()
+        .domain(d3.range(publisherSalesData.length))
+        .rangeRound([margin.top, height - margin.bottom])
+        .padding(0.1)
+
+      const colorScale = d3.scaleOrdinal()
+        .domain(publisherSalesData.map(d => d[y]))
+        .range(d3.schemeTableau10)
+
+      const format = xScale.tickFormat(20, publisherSalesData.format)
+      const xAxis = g => g
+        .attr('transform', `translate(0, ${margin.top})`)
+        .call(d3.axisTop(xScale).ticks(width / 80, publisherSalesData.format))
+        .call(g => g.select('.domain').remove())
+      const yAxis = g => g
+        .attr('transform', `translate(${margin.left}, 0)`)
+        .call(d3.axisLeft(yScale).tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
+
+      svgBar.append('g')
+        .selectAll('rect')
+        .data(publisherSalesData)
+        .join('rect')
+        .attr('x', xScale(0))
+        .attr('y', (d, i) => yScale(i))
+        .attr('width', d => xScale(d.value) - xScale(0))
+        .attr('height', yScale.bandwidth())
+        .attr('fill', d => colorScale(d.name))
+        .attr('class', `bar`)
+        .attr('id', d => `bar-${d.index}`)
+        .on('mouseover', (e, d) => {
+          publisherOnMouseOver(d)
+        })
+        .on('mouseleave', (e, d) => {
+          publisherOnMouseLeave(d)
+        })
+        .on('click', (event, d) => {
+          publisherOnClick(d, colorScale)
+        })
+
+      // add text labels to bar chart
+      svgBar.append("g")
+        .attr("fill", "white")
+        .attr("text-anchor", "end")
+        .attr("font-family", "sans-serif")
+        .attr("font-size", 12)
+        .selectAll("text")
+        .data(publisherSalesData)
+        .join("text")
+        .attr("x", d => xScale(d.value))
+        .attr("y", (d, i) => yScale(i) + yScale.bandwidth() / 2)
+        .attr("dy", "0.35em")
+        .attr("dx", -4)
+        .attr("font-weight", "bold")
+        .text(d => format(d.value))
+        .call(text => text.filter(d => xScale(d.value) - xScale(0) < 20) // short bars
+          .attr("dx", +4)
+          .attr("fill", "black")
+          .attr("text-anchor", "start"));
+
+          svgBar.append('g')
+        .call(xAxis)
+
+        svgBar.append('g')
+        .call(yAxis)
+        .style('font-size', '16px')
+    }
+
+    dataJoinBarChart()
 
     // set up elements
     const svgBubble = d3.create('svg')
@@ -196,7 +246,6 @@ d3.csv(genreDataUrl).then((genreData) => {
 
     document.getElementById('bubble').appendChild(svgBubble.node())
 
-    let selectedPublisher = null
 
     const dataJoinBubbleChart = () => {
       // filter test
@@ -279,51 +328,16 @@ d3.csv(genreDataUrl).then((genreData) => {
 
     dataJoinBubbleChart()
 
-    // publisher chart
-    const publisherOnMouseOver = d => {
-      d3.selectAll('.bar-publisher')
-        .transition()
-      d3.selectAll('.bar-publisher')
-        .filter(d => !selectedPublisher || (selectedPublisher && selectedPublisher.index !== d.index))
-        .style('opacity', 0.3)
-      d3.selectAll(`#bar-publisher-${d.index}`)
-        .style('opacity', 1)
-        .style('cursor', 'pointer')
-    }
-    const publisherOnMouseLeave = d => {
-      d3.selectAll('.bar-publisher')
-        .transition()
-        .delay(100)
-        .style('opacity', 1)
-      if (selectedPublisher) {
-        d3.selectAll('.bar-publisher')
-          .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
-          .transition()
-          .delay(100)
-          .style('opacity', 0.3)
-      }
-    }
-    const publisherOnClick = d => {
-      selectedPublisher = d
-      d3.selectAll('#selected')
-        .text(d.name)
-        .style('color', colorScale(selectedPublisher.name))
-        .text(selectedPublisher.name)
-      d3.selectAll('.bar')
-        .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
-        .style('opacity', 0.3)
-      dataJoinBubbleChart()
-    }
-    const { svg: publisherChart, colorScale } = barChart({
-      data: publisherSalesData,
-      chartKey: 'publisher',
-      x: 'value',
-      y: 'name',
-      isClickable: true,
-      onMouseOver: publisherOnMouseOver,
-      onMouseLeave: publisherOnMouseLeave,
-      onClick: publisherOnClick,
-    })
+    // const { svg: publisherChart, colorScale } = barChart({
+    //   data: publisherSalesData,
+    //   chartKey: 'publisher',
+    //   x: 'value',
+    //   y: 'name',
+    //   isClickable: true,
+    //   onMouseOver: publisherOnMouseOver,
+    //   onMouseLeave: publisherOnMouseLeave,
+    //   onClick: publisherOnClick,
+    // })
 
     // add button
     d3.select('#publisher_bar_viz')
@@ -335,7 +349,7 @@ d3.csv(genreDataUrl).then((genreData) => {
         if (selectedPublisher) {
           selectedPublisher = null
           // reset all opacities
-          d3.selectAll('.bar-publisher,.bar-game')
+          d3.selectAll('.bar')
             .transition()
             .delay(100)
             .style('opacity', 1)
@@ -350,7 +364,7 @@ d3.csv(genreDataUrl).then((genreData) => {
         }
       })
 
-    document.getElementById('publisher_bar_viz').appendChild(publisherChart.node())
+    // document.getElementById('publisher_bar_viz').appendChild(publisherChart.node())
 
     d3.select('#publisher_bar_viz')
       .append('h1')
@@ -495,6 +509,10 @@ d3.csv(genreDataUrl).then((genreData) => {
       startYear = Math.round(x.invert(selection[0]));
       endYear = Math.round(x.invert(selection[1]));
 
+      // Update Bar Chart
+      dataJoinBarChart()
+      dataJoinBubbleChart()
+
       // TODO add year range as text element on area chart, upper left
       console.log(startYear, endYear, selectedGenres, 'bhupi')
     }
@@ -536,9 +554,17 @@ d3.csv(genreDataUrl).then((genreData) => {
         // console.log("selection", clickSelecting);
         if (!clickSelecting) {
           d3.selectAll(".myArea").transition().duration(1250).style("opacity", .75);
+          // Update Bar Chart
+          genres = defaultGenres
+          dataJoinBarChart()
+          dataJoinBubbleChart()
           // return;
         } else {
           d3.select(genreName).transition().duration(1250).style("opacity", .1);
+          // Update Bar Chart
+          genres = genreArrayRemove(genres, genreName.substring(1));
+          dataJoinBarChart()
+          dataJoinBubbleChart()
         }
 
       }
@@ -546,6 +572,11 @@ d3.csv(genreDataUrl).then((genreData) => {
         if (clickSelecting) {
           selectedGenres.push(genreName);
           d3.select(genreName).transition().duration(10).style("opacity", 1);
+          // Update Bar Chart
+          // genres = genreArrayRemove(selectedGenres, genreName.substring(1));
+          genres.push(genreName.substring(1))
+          dataJoinBarChart()
+          dataJoinBubbleChart()
           // return;
         }
         else {
@@ -553,9 +584,16 @@ d3.csv(genreDataUrl).then((genreData) => {
           selectedGenres.push(genreName)
           d3.selectAll(".myArea").transition().duration(1250).style("opacity", .1)
           d3.select("." + d.target.__data__).transition().duration(10).style("opacity", 1)
+          // Update Bar Chart
+          // genres = genreArrayRemove(selectedGenres, genreName.substring(1));
+          genres = []
+          genres.push(genreName.substring(1))
+          dataJoinBarChart()
+          dataJoinBubbleChart()
         }
       }
       console.log(selectedGenres, 'selected genres')
+      console.log(genres, 'passed in genres')
     }
 
     //////////

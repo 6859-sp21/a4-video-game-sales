@@ -253,61 +253,6 @@ d3.csv(dataUrl, d3.autoType).then(data => {
             },
         exit => exit.remove()
     )
-
-    console.log(svg.selectAll('g'), 'ooo')
-    console.log(leaf)
-    
-    // leaf
-    //   .data(leaves, d => {console.log(d, 'jack'); return d;})
-    //   .join(
-    //     enter => enter.append('circle')
-    //   )
-          // .append('circle')
-          // .attr("r", d => d.r)
-          // .attr("fill-opacity", 0.7)
-          // .attr("fill", d => color(d.data.name))
-      // .attr("id", d => (d.leafUid = DOM.uid("leaf")).id)
-      // .data(leaves, d => d.data.name)
-      // .join(
-      //   enter => enter.append('circle')
-            
-      //       .attr("r", d => d.r)
-      //       .attr("fill-opacity", 0.7)
-      //       .attr("fill", d => {console.log(d, '!!!'); return color(d.data.name)})
-      //     .call(enter => enter.transition(t)
-            
-      //     ).call(enter => console.log(enter, '!!!dlfjsl')),
-      //   update => update
-          
-      //     .attr("r", d => d.r)
-      //     .attr("fill-opacity", 0.7)
-      //     .attr("fill", d => color(d.data.name))
-      //     .call(update => update.transition(t)
-      //     .call(update => console.log(update))
-      //   ),
-      //   exit => exit.remove()
-      //       )
-
-    // leaf.append("clipPath")
-    //     // .attr("id", d => (d.clipUid = DOM.uid("clip")).id)
-    //   .append("use")
-    //     // .attr("xlink:href", d => d.leafUid.href);
-
-    // leaf.append("text")
-    //     // .attr("clip-path", d => d.clipUid)
-    //   .selectAll("tspan")
-    //   .data(d => d)
-    //   // .data(d => d.data.name.split(/(?=[A-Z][a-z])|\s+/g))
-    //   .join("tspan")
-    //     .attr("x", 0)
-    //     .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
-    //     .attr('font-size', '16px')
-    //     .text(d => d.data.name)
-    //     .call(wrap, 100)
-
-    // leaf.append("title")
-    //     .text(d => `${d.data.title === undefined ? "" : `${d.data.title}
-    //       `}${d.value}`);
   }
 
   dataJoinBubbleChart()
