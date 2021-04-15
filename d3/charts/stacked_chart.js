@@ -119,8 +119,108 @@ function genreArrayRemove(arr, value) {
 d3.csv(genreDataUrl).then((genreData) => {
     d3.csv(dataUrl, d3.autoType).then(data => {
 
-        var startYear = 1980
-        var endYear = 2020
+        //////////
+        // PUBLISHER_BAR //
+        //////////
+        const defaultStartYear = 1980
+        const defaultEndYear = 2020
+        const defaultGenres = ['Action', 'Adventure', 'Fighting', 'Misc', 'Platform', 'Puzzle', 'Puzzle', 'Racing', 'Role-Playing', 'Shooter', 'Simulation', 'Strategy']
+
+        var startYear = defaultStartYear
+        var endYear = defaultEndYear
+        var genres = defaultGenres
+
+        // filter the data
+        const dataFilt = data.filter(d => {
+            return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
+        })
+
+        // aggregate
+        let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
+
+        // publisher chart
+        let selectedPublisher = null
+        const publisherOnMouseOver = d => {
+            d3.selectAll('.bar-publisher')
+                .transition()
+            d3.selectAll('.bar-publisher')
+                .filter(d => !selectedPublisher || (selectedPublisher && selectedPublisher.index !== d.index))
+                .style('opacity', 0.3)
+            d3.selectAll(`#bar-publisher-${d.index}`)
+                .style('opacity', 1)
+                .style('cursor', 'pointer')
+        }
+
+        const publisherOnMouseLeave = d => {
+            d3.selectAll('.bar-publisher')
+                .transition()
+                .delay(100)
+                .style('opacity', 1)
+            if (selectedPublisher) {
+                d3.selectAll('.bar-publisher')
+                    .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
+                    .transition()
+                    .delay(100)
+                    .style('opacity', 0.3)
+            }
+        }
+
+        const publisherOnClick = d => {
+            selectedPublisher = d
+            d3.selectAll('#selected')
+                .text(d.name)
+                .style('color', colorScale(selectedPublisher.name))
+                .text(selectedPublisher.name)
+            d3.selectAll('.bar')
+                .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
+                .style('opacity', 0.3)
+        }
+        
+        const { svg: publisherChart, colorScale } = barChart({
+            data: publisherSalesData,
+            chartKey: 'publisher',
+            x: 'value',
+            y: 'name',
+            isClickable: true,
+            onMouseOver: publisherOnMouseOver,
+            onMouseLeave: publisherOnMouseLeave,
+            onClick: publisherOnClick,
+        })
+
+        // add button
+        d3.select('#publisher_bar_viz')
+            .append("input")
+            .attr("type", "button")
+            .attr("class", "button")
+            .attr("value", "Reset")
+            .on('click', () => {
+                selectedPublisher = null
+                selectedGame = null
+                // reset all opacities
+                d3.selectAll('.bar-publisher,.bar-game')
+                    .transition()
+                    .delay(100)
+                    .style('opacity', 1)
+
+                // delete text
+                d3.selectAll('.selected')
+                    .text('None')
+                    .style('color', 'black')
+            })
+
+        document.getElementById('publisher_bar_viz').appendChild(publisherChart.node())
+
+        d3.select('#publisher_bar_viz')
+            .append('h1')
+            .attr('id', 'selected')
+            .attr('class', 'selected')
+            .style('font-family', 'sans-serif')
+            .text('None')
+            .style('color', 'black')
+
+        //////////
+        // GENERAL //
+        //////////
 
         // set the dimensions and margins of the graph
         var margin = { top: 60, right: 230, bottom: 50, left: 100 },
@@ -137,11 +237,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                 "translate(" + margin.left + "," + margin.top + ")");
 
         var keys = genreData.columns.slice(2);
-        console.log(keys)
-
-        //////////
-        // GENERAL //
-        //////////
+        // console.log(keys)
 
         var genreColorScheme = ["#4e79a7", "#f28e2c", "#e15759", "#76b7b2", "#59a14f", "#edc949", "#af7aa1", "#ff9da7", "#9c755f", "#bab0ab", "#882020", "#a3d677"];
 
@@ -156,10 +252,6 @@ d3.csv(genreDataUrl).then((genreData) => {
         var stackedData = d3.stack()
             .keys(keys)
             (genreData)
-
-        // console.log(genreData)
-        // console.log(keys)
-        // console.log(stackedData)
 
         //////////
         // AXIS //
@@ -178,6 +270,8 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("text-anchor", "end")
             .attr("x", width)
             .attr("y", height + 40)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 24)
             .text("Time (year)")
 
         // Add Y axis label:
@@ -185,6 +279,8 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("text-anchor", "end")
             .attr("x", 0)
             .attr("y", -20)
+            .attr("font-family", "sans-serif")
+            .attr("font-size", 24)
             .text("Global Sales of Video Games by Genre")
             .attr("text-anchor", "start")
             // .selectAll("text")
@@ -195,8 +291,6 @@ d3.csv(genreDataUrl).then((genreData) => {
             .range([height, 0]);
         svg.append("g")
             .call(d3.axisLeft(y).ticks(5))
-
-
 
         //////////
         // BRUSHING AND CHART //
@@ -266,7 +360,7 @@ d3.csv(genreDataUrl).then((genreData) => {
         //////////
 
         var clickSelecting = false
-        var genresSelected = []
+        var selectedGenres = []
 
         // What to do when one group is hovered
         var highlight = function (d) {
@@ -290,10 +384,10 @@ d3.csv(genreDataUrl).then((genreData) => {
         var genreChoice = function (d) {
             // reduce opacity of all groups
             let genreName = "." + d.target.__data__;
-            if (genresSelected.includes(genreName)) {
-                genresSelected = genreArrayRemove(genresSelected, genreName);
-                clickSelecting = genresSelected.length != 0;
-                // console.log("array", genresSelected);
+            if (selectedGenres.includes(genreName)) {
+                selectedGenres = genreArrayRemove(selectedGenres, genreName);
+                clickSelecting = selectedGenres.length != 0;
+                // console.log("array", selectedGenres);
                 // console.log("selection", clickSelecting);
                 if (!clickSelecting) {
                     d3.selectAll(".myArea").transition().duration(1250).style("opacity", .75);
@@ -303,13 +397,13 @@ d3.csv(genreDataUrl).then((genreData) => {
             }
             else {
                 if (clickSelecting) {
-                    genresSelected.push(genreName);
+                    selectedGenres.push(genreName);
                     d3.select(genreName).transition().duration(10).style("opacity", 1);
                     return;
                 }
                 else {
                     clickSelecting = true
-                    genresSelected.push(genreName)
+                    selectedGenres.push(genreName)
                     d3.selectAll(".myArea").transition().duration(1250).style("opacity", .1)
                     d3.select("." + d.target.__data__).transition().duration(10).style("opacity", 1)
                 }
@@ -328,14 +422,9 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("value", "Reset")
             .on('click', () => {
                 clickSelecting = false
-                genresSelected = []
+                selectedGenres = []
                 // reset all opacities
                 d3.selectAll(".myArea").transition().duration(1250).style("opacity", .75)
-
-                // // delete text
-                // d3.selectAll('.selected')
-                //     .text('None')
-                //     .style('color', 'black')
             })
 
         // document.getElementById('one').appendChild(areaChart.node())
@@ -381,100 +470,5 @@ d3.csv(genreDataUrl).then((genreData) => {
             .on("mouseover", highlight)
             .on("mouseout", noHighlight)
             .on("click", genreChoice)
-
-
-
-        //////////
-        // PUBLISHER_BAR //
-        //////////
-
-
-        // TODO these will be passed to me from others
-        const genres = ['Action', 'Adventure', 'Puzzle']
-
-        // filter the data
-        const dataFilt = data.filter(d => {
-            return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
-        })
-
-        // aggregate
-        let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
-
-        // publisher chart
-        let selectedPublisher = null
-        const publisherOnMouseOver = d => {
-            d3.selectAll('.bar-publisher')
-                .transition()
-            d3.selectAll('.bar-publisher')
-                .filter(d => !selectedPublisher || (selectedPublisher && selectedPublisher.index !== d.index))
-                .style('opacity', 0.3)
-            d3.selectAll(`#bar-publisher-${d.index}`)
-                .style('opacity', 1)
-                .style('cursor', 'pointer')
-        }
-        const publisherOnMouseLeave = d => {
-            d3.selectAll('.bar-publisher')
-                .transition()
-                .delay(100)
-                .style('opacity', 1)
-            if (selectedPublisher) {
-                d3.selectAll('.bar-publisher')
-                    .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
-                    .transition()
-                    .delay(100)
-                    .style('opacity', 0.3)
-            }
-        }
-        const publisherOnClick = d => {
-            selectedPublisher = d
-            d3.selectAll('#selected')
-                .text(d.name)
-                .style('color', colorScale(selectedPublisher.name))
-                .text(selectedPublisher.name)
-            d3.selectAll('.bar')
-                .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
-                .style('opacity', 0.3)
-        }
-        const { svg: publisherChart, colorScale } = barChart({
-            data: publisherSalesData,
-            chartKey: 'publisher',
-            x: 'value',
-            y: 'name',
-            isClickable: true,
-            onMouseOver: publisherOnMouseOver,
-            onMouseLeave: publisherOnMouseLeave,
-            onClick: publisherOnClick,
-        })
-
-        // add button
-        d3.select('#publisher_bar_viz')
-            .append("input")
-            .attr("type", "button")
-            .attr("class", "button")
-            .attr("value", "Reset")
-            .on('click', () => {
-                selectedPublisher = null
-                selectedGame = null
-                // reset all opacities
-                d3.selectAll('.bar-publisher,.bar-game')
-                    .transition()
-                    .delay(100)
-                    .style('opacity', 1)
-
-                // delete text
-                d3.selectAll('.selected')
-                    .text('None')
-                    .style('color', 'black')
-            })
-
-        document.getElementById('publisher_bar_viz').appendChild(publisherChart.node())
-
-        d3.select('#publisher_bar_viz')
-            .append('h1')
-            .attr('id', 'selected')
-            .attr('class', 'selected')
-            .style('font-family', 'sans-serif')
-            .text('None')
-            .style('color', 'black')
     })
 })
