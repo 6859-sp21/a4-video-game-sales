@@ -9,6 +9,7 @@ html {
 
 body {
     margin-bottom: 0px;
+    background-color: #F5F5F5;
   }
   .error {
       color: red;
@@ -122,7 +123,3 @@ body {
   #myBtn:hover {
     background-color: #555;
   }
-
-/* .bar:hover {
-    opacity: 1;
-} */

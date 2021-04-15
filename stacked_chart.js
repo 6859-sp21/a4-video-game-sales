@@ -4,7 +4,7 @@ const genreDataUrl = "https://raw.githubusercontent.com/6859-sp21/a4-video-game-
 const width = 900
 const height = 400
 
-const bubbleWidth = 800
+const bubbleWidth = 1200
 const bubbleHeight = 800
 
 const bubbleWrapWidth = 100
@@ -42,6 +42,60 @@ function wrap(text, width) {
     });
 }
 
+const addFilterTexts = (svgObject, selectedGenres, startYear, endYear, genreColorScale, xLeft, xRight) => {
+    const genreText = () => {
+        if (selectedGenres.length === 0) {
+            return 'All Genres'
+        } else if (selectedGenres.length === 1) {
+            return `Genre: ${selectedGenres[0].substring(1)}`
+        } else {
+            return 'Multiple Selected Genres'
+        }
+    }
+
+    const genreColor = () => {
+        if (selectedGenres.length === 0 || selectedGenres.length > 1) {
+            return 'black'
+        }
+        const genre = selectedGenres[0].substring(1)
+        return genreColorScale(genre)
+    }
+
+    svgObject.selectAll('text.genre')
+        .data([selectedGenres])
+        .join(
+            enter => enter.append('text')
+                .attr('class', 'genre')
+                .attr('x', xLeft)
+                .attr('y', '-20')
+                .attr('font-size', '18px')
+                .attr('font-weight', 'bold')
+                .style('opacity', 1)
+                .style('fill', genreColor)
+                .text(genreText),
+            update => update
+                .style('opacity', 1)
+                .style('fill', genreColor)
+                .text(genreText),
+            exit => exit.remove()
+        )
+    
+    svgObject.selectAll('text.year')
+        .data([[startYear, endYear]])
+        .join(
+            enter => enter.append('text')
+                .attr('class', 'year')
+                .attr('x', xRight)
+                .attr('y', '-20')
+                .attr('font-size', '18px')
+                .attr('font-weight', 'bold')
+                .text(d => `${d[0]} - ${d[1]}`),
+            update => update
+                .text(d => `${d[0]} - ${d[1]}`),
+            exit => exit.remove()
+        )
+}
+
 const sumByCol = (data, groupCol, dataCol) => {
     const result = {}
     data.forEach(d => {
@@ -77,8 +131,7 @@ function genreArrayRemove(arr, value) {
 }
 
 function formTooltipString(value) {
-    if (value < 0.1)
-    {
+    if (value < 0.1) {
         return "Global Sales: Less Than 100 Thousand USD"
     }
     return "Global Sales: " + value + " Million USD"
@@ -148,6 +201,10 @@ d3.csv(genreDataUrl).then((genreData) => {
         // const svgBar = d3.create('svg')
         //     .attr('viewBox', [0, 0, width, height])
 
+
+        var colorScale = d3.scaleOrdinal()
+                .domain(publisherSalesData.map(d => d[y]))
+                .range(d3.schemeTableau10)
         var bar_xScale = d3.scaleLinear()
             .domain([0, d3.max(publisherSalesData, d => d[x])])
             .range([marginBar.left, width - marginBar.right])
@@ -169,7 +226,8 @@ d3.csv(genreDataUrl).then((genreData) => {
         svgBar.append('g')
             .attr('transform', `translate(${marginBar.left - 5}, 0)`)
             .attr('class', 'y axis');
-        // Add title
+        
+            // Add title
         svgBar.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '40%')
@@ -177,7 +235,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("font-family", "monospace")
             .attr("font-size", '24px')
             .text("Top 10 Game Publishers")
-        
+
         svgBar.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '40%')
@@ -185,8 +243,8 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("font-family", "monospace")
             .attr("font-size", '16px')
             .text("Global Sales, by Publisher (USD, millions)")
-        
-            svgBar.append("text")
+
+        svgBar.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '-18%')
             .attr("y", '-120')
@@ -195,9 +253,14 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("transform", "rotate(270)")
             .text("Publisher Name")
 
-
-
-
+        svgBar.append("text")
+            .attr("text-anchor", "left")
+            .attr("x", '-125')
+            .attr("y", '40')
+            .attr("font-family", "monospace")
+            .attr("font-size", '12px')
+            .attr('font-weight', 'bold')
+            .text("🖱️ Click to select a particular publisher!")
 
         // document.getElementById('publisher_bar_viz').appendChild(svgBar.node())
 
@@ -227,10 +290,6 @@ d3.csv(genreDataUrl).then((genreData) => {
         }
         const publisherOnClick = (d, colorScale) => {
             selectedPublisher = d
-            d3.selectAll('#selected')
-                .text(d.name)
-                .style('color', colorScale(selectedPublisher.name))
-                .text(selectedPublisher.name)
             d3.selectAll('.bar')
                 .filter(d => selectedPublisher && selectedPublisher.index !== d.index)
                 .style('opacity', 0.3)
@@ -252,12 +311,14 @@ d3.csv(genreDataUrl).then((genreData) => {
 
             bar_yScale.domain(d3.range(publisherSalesData.length))
 
-            const colorScale = d3.scaleOrdinal()
+            colorScale = d3.scaleOrdinal()
                 .domain(publisherSalesData.map(d => d[y]))
                 .range(d3.schemeTableau10)
 
             const tBar = svgBar.transition()
                 .duration(750);
+
+            addFilterTexts(svgBar, selectedGenres, startYear, endYear, color, '-50', '65%')
 
             svgBar.selectAll('rect')
                 // .selectAll('rect')
@@ -330,10 +391,15 @@ d3.csv(genreDataUrl).then((genreData) => {
             .style("border-radius", "5px")
             .style("padding", "10px")
 
+        const marginBubbble = { left: 0, right: 0, top: 75, bottom: 0 }
+
         const svgBubble = d3.select("#bubble")
             .append("svg")
-            .attr("width", bubbleWidth)
-            .attr("height", bubbleHeight)
+            .attr("width", bubbleWidth + marginBubbble.left + marginBubbble.right)
+            .attr("height", bubbleHeight + marginBubbble.top + marginBubbble.bottom)
+            .append("g")
+            .attr("transform",
+                "translate(" + marginBubbble.left + "," + marginBubbble.top + ")")
             .attr('font-size', '16px')
             .attr('font-family', 'monospace')
             .attr('text-anchor', 'middle')
@@ -365,18 +431,56 @@ d3.csv(genreDataUrl).then((genreData) => {
             const gameSalesData = sumByCol(dataFiltBubble, 'Name', 'Global_Sales')
 
             // color by name
-            const color = d3.scaleOrdinal(gameSalesData.map(d => d.name), d3.schemeSet3)
+            const colorBubble = d3.scaleOrdinal(gameSalesData.map(d => d.name), d3.schemeSet3)
 
             // repack and run
             const root = pack(gameSalesData)
             var leaves = root.leaves()
 
             // Don't make leaves for publishers without any games in time frame
-            if (gameSalesData.length == 0) {leaves = []}
+            if (gameSalesData.length == 0) { leaves = [] }
 
             const t = svgBubble.transition()
                 .duration(750);
+            
+            addFilterTexts(svgBubble, selectedGenres, startYear, endYear, color, '20%', '85%')
 
+            const publisherTitle = () => {
+                if (selectedPublisher) {
+                    return selectedPublisher.name
+                }
+
+                return 'All Publishers'
+            }
+
+            const publisherColor = () => {
+                if (selectedPublisher) {
+                    return colorScale(selectedPublisher.name)
+                }
+
+                return 'black'
+            }
+
+            // Add title
+            svgBubble.selectAll("text.bubble-title")
+                .data([selectedPublisher])
+                .join(
+                    enter => enter.append('text')
+                        .attr('class', 'bubble-title')
+                        .attr("text-anchor", "middle")
+                        .attr("x", '52%')
+                        .attr("y", -20)
+                        .attr("font-family", "monospace")
+                        .attr("font-size", '18px')
+                        .attr('font-weight', 'bold')
+                        .style('fill', publisherColor)
+                        .text(publisherTitle),
+                    update => update
+                         .style('fill', publisherColor)
+                         .text(publisherTitle),
+                    exit => exit.remove()
+                )
+                
             const leaf = svgBubble.selectAll('g')
                 .data(leaves)
                 .join(
@@ -391,7 +495,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                         enter.append('circle')
                             .attr("r", d => d.r)
                             .attr("fill-opacity", 0.7)
-                            .attr("fill", d => color(d.data.name))
+                            .attr("fill", d => colorBubble(d.data.name))
                             .on('mouseover', (event, d) => {
                                 bubbleMouseOver(d)
                             })
@@ -428,10 +532,10 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .call(update => update.transition(t)
                                 .attr("r", d => d.r)
                                 .attr("fill-opacity", 0.7)
-                                .attr("fill", d => color(d.data.name)))
-                        .on('mouseover', (event, d) => {
-                            bubbleMouseOver(d)
-                        })
+                                .attr("fill", d => colorBubble(d.data.name)))
+                            .on('mouseover', (event, d) => {
+                                bubbleMouseOver(d)
+                            })
 
                         update.select("text")
                             .selectAll("tspan")
@@ -448,9 +552,9 @@ d3.csv(genreDataUrl).then((genreData) => {
                             //         console.log("gooch",d)
                             //         d.r-10
                             //     })
-                        .on('mouseover', (event, d) => {
-                            bubbleMouseOver(d)
-                        })
+                            .on('mouseover', (event, d) => {
+                                bubbleMouseOver(d)
+                            })
                     },
                     exit => exit.remove()
                 )
@@ -463,33 +567,14 @@ d3.csv(genreDataUrl).then((genreData) => {
             .append("input")
             .attr("type", "button")
             .attr("class", "button")
-            .attr("value", "Reset")
+            .attr("value", "Reset to All Publishers")
             .on('click', () => {
                 if (selectedPublisher) {
-                    selectedPublisher = null
-                    // reset all opacities
-                    d3.selectAll('.bar')
-                        .transition()
-                        .delay(100)
-                        .style('opacity', 1)
-
-                    // delete text
-                    d3.selectAll('.selected')
-                        .text('Top 10 Publishers')
-                        .style('color', 'black')
-
                     // re-join
+                    selectedPublisher = null
                     dataJoinBubbleChart()
                 }
             })
-
-        d3.select('#publisher_bar_viz')
-            .append('h1')
-            .attr('id', 'selected')
-            .attr('class', 'selected')
-            .style('font-family', 'monospace')
-            .text('Top 10 Publishers')
-            .style('color', 'black')
 
         //////////
         // GENERAL //
@@ -545,15 +630,15 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("font-family", "monospace")
             .attr("font-size", '24px')
             .text("Global Sales of Video Games")
-        
-            svg.append("text")
+
+        svg.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '40%')
             .attr("y", -10)
             .attr("font-family", "monospace")
             .attr("font-size", '16px')
             .text("Sales to Date, by Genre")
-        
+
         svg.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '-18%')
@@ -562,8 +647,30 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("font-size", '24px')
             .attr("transform", "rotate(270)")
             .text("USD (millions)")
-            
-            // .attr("text-anchor", "start")
+
+        // add label for legend
+        svg.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '80%')
+            .attr("y", '-20')
+            .attr("font-family", "monospace")
+            .attr("font-size", '12px')
+            .text("🖱️ Click to filter by genre!")
+        svg.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '80%')
+            .attr("y", '0')
+            .attr("font-family", "monospace")
+            .attr("font-size", '12px')
+            .text("⇧+🖱️ Shift + Click to multiselect!")
+
+        svg.append("text")
+            .attr("text-anchor", "left")
+            .attr("x", '10')
+            .attr("y", '20')
+            .attr("font-family", "monospace")
+            .attr("font-size", '12px')
+            .text("🖱️ + ↔️ Click & drag to select a time range!")
 
         //////////
         // BRUSHING AND CHART //
@@ -676,7 +783,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                     selectedGenres.push(genreName);
                     d3.select(genreName).transition().duration(10).style("opacity", 1);
                     d3.select(".legendSquare-" + d.target.__data__).transition().duration(10).style("opacity", 1)
-        
+
                 }
                 else {
                     clickSelecting = true
@@ -693,7 +800,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             if (d.shiftKey) {
                 shiftGenreChoice(d)
             }
-            else{
+            else {
                 // reduce opacity of all groups
                 let genreName = "." + d.target.__data__;
                 clickSelecting = true
@@ -716,11 +823,18 @@ d3.csv(genreDataUrl).then((genreData) => {
         //////////
 
         // add button
-        d3.select('#stacked_viz_button')
-            .append("input")
+        svg
+            .append('foreignObject')
+            .attr('x', '10')
+            .attr('y', '40')
+            .attr('width', '200px')
+            .attr('height', '100px')
+            .append('xhtml:input')
             .attr("type", "button")
             .attr("class", "button")
-            .attr("value", "Reset")
+            .attr("value", "Reset Genres & Time Range")
+            .attr('cursor', 'pointer')
+
             .on('click', () => {
                 clickSelecting = false
                 selectedGenres = []
@@ -731,11 +845,6 @@ d3.csv(genreDataUrl).then((genreData) => {
                     .style('opacity', 1)
                     .transition()
                     .delay(100)
-
-                // delete text
-                d3.selectAll('.selected')
-                    .text('Top 10 Publishers')
-                    .style('color', 'black')
 
                 startYear = defaultStartYear
                 endYear = defaultEndYear
