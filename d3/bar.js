@@ -179,7 +179,7 @@ d3.csv(dataUrl, d3.autoType).then(data => {
   let selectedPublisher = null
 
   const dataJoinBubbleChart = () => {
-    // filter
+    // filter test
     const dataFilt = data.filter(d => !selectedPublisher || (d.Publisher == selectedPublisher.name))
     const gameSalesData = sumByCol(dataFilt, 'Name', 'Global_Sales')
 
