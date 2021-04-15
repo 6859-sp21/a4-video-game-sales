@@ -1,8 +1,10 @@
 const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/vgsales_clean_2.csv'
 const genreDataUrl = "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv"
 
-const width = 800
-const height = 800
+
+// const margin = { top: 30, right: 30, bottom: 10, left: 500 }
+const width = 600
+const height = 400
 
 function wrap(text, width) {
   text.each(function () {
@@ -86,9 +88,11 @@ d3.csv(genreDataUrl).then((genreData) => {
     // PUBLISHER_BAR //
     //////////
 
+    const margin = ({ top: 100, right: 300, bottom: 100, left: 500 })
+
     const defaultStartYear = 1980
     const defaultEndYear = 2020
-    const defaultGenres = ['Action', 'Adventure', 'Fighting', 'Misc', 'Platform', 'Puzzle', 'Puzzle', 'Racing', 'Role-Playing', 'Shooter', 'Simulation', 'Strategy']
+    const defaultGenres = [] // ['Action', 'Adventure', 'Fighting', 'Misc', 'Platform', 'Puzzle', 'Puzzle', 'Racing', 'Role-Playing', 'Shooter', 'Simulation', 'Strategy']
 
     var startYear = defaultStartYear
     var endYear = defaultEndYear
@@ -96,16 +100,47 @@ d3.csv(genreDataUrl).then((genreData) => {
 
     let selectedPublisher = null
 
+    console.log(genres.length, 'gen len')
+
     // filter the data
-    const dataFilt = data.filter(d => {
-      return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
+    var dataFilt = data.filter(d => {
+      return startYear <= d.Year && d.Year <= endYear && (genres.length === 0 || genres.indexOf(d.Genre) > -1)
     })
+
+    console.log(dataFilt.length, 'data filt length og')
 
     // aggregate
     let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
 
+    const marginBar = { left: 250, right: 0, top: 150, bottom: 0 }
     const svgBar = d3.create('svg')
       .attr('viewBox', [0, 0, width, height])
+
+    var bar_xScale = d3.scaleLinear()
+      .domain([0, d3.max(publisherSalesData, d => d[x])])
+      .range([marginBar.left, width - marginBar.right])
+
+    var bar_yScale = d3.scaleBand()
+      .domain(d3.range(publisherSalesData.length))
+      .rangeRound([marginBar.top, height - marginBar.bottom])
+      .padding(0.1)
+
+    var bar_xaxis = d3.axisTop(bar_xScale);
+
+    var bar_yaxis = d3.axisLeft(bar_yScale)
+      .tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0)
+
+    svgBar.append('g')
+      .attr('transform', `translate(0, ${marginBar.top})`)
+      .attr('class', 'x axis');
+
+    svgBar.append('g')
+      .attr('transform', `translate(${marginBar.left - 5}, 0)`)
+      .attr('class', 'y axis');
+
+
+
+
 
     document.getElementById('publisher_bar_viz').appendChild(svgBar.node())
 
@@ -145,92 +180,107 @@ d3.csv(genreDataUrl).then((genreData) => {
       dataJoinBubbleChart()
     }
 
+    // const initialBarChart = () =>
+
     const dataJoinBarChart = () => {
       const x = 'value'
       const y = 'name'
 
-      const dataFilt = data.filter(d => {
-        return startYear <= d.Year && d.Year <= endYear && genres.indexOf(d.Genre) > -1
+      dataFilt = data.filter(d => {
+        return startYear <= d.Year && d.Year <= endYear && (genres.length === 0 || genres.indexOf(d.Genre) > -1)
       })
       let publisherSalesData = sumByCol(dataFilt, 'Publisher', 'Global_Sales')
       // console.log(publisherSalesData, 'pubbbb')
 
       // filter test
-      const margin = ({ top: 30, right: 30, bottom: 10, left: 500 })
+      const margin = ({ top: 100, right: 300, bottom: 100, left: 500 })
       // const width = 1000
       // const height = 300
 
       console.log(publisherSalesData)
 
-      const xScale = d3.scaleLinear()
-        .domain([0, d3.max(publisherSalesData, d => d[x])])
-        .range([margin.left, width - margin.right])
+      bar_xScale.domain([0, d3.max(publisherSalesData, d => d[x])])
+      // .range([margin.left, width - margin.right])
 
-      const yScale = d3.scaleBand()
-        .domain(d3.range(publisherSalesData.length))
-        .rangeRound([margin.top, height - margin.bottom])
-        .padding(0.1)
+      bar_yScale.domain(d3.range(publisherSalesData.length))
+      // .rangeRound([margin.top, height - margin.bottom])
+      // .padding(0.1)
 
       const colorScale = d3.scaleOrdinal()
         .domain(publisherSalesData.map(d => d[y]))
         .range(d3.schemeTableau10)
 
-      const format = xScale.tickFormat(20, publisherSalesData.format)
-      const xAxis = g => g
-        .attr('transform', `translate(0, ${margin.top})`)
-        .call(d3.axisTop(xScale).ticks(width / 80, publisherSalesData.format))
-        .call(g => g.select('.domain').remove())
-      const yAxis = g => g
-        .attr('transform', `translate(${margin.left}, 0)`)
-        .call(d3.axisLeft(yScale).tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
+      const format = bar_xScale.tickFormat(20, publisherSalesData.format)
 
-      svgBar.append('g')
-        .selectAll('rect')
+      // const xAxis = g => g
+      //   .attr('transform', `translate(0, ${margin.top})`)
+      //   .attr('class', 'x-axis')
+      //   .call(d3.axisTop(bar_xScale).ticks(width / 80, publisherSalesData.format))
+      //   .call(g => g.select('.domain').remove())
+
+      // const yAxis = g => g
+      //   .attr('transform', `translate(${margin.left}, 0)`)
+      //   .attr('class', 'y-axis')
+      //   .call(d3.axisLeft(bar_yScale).tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
+
+      const tBar = svgBar.transition()
+        .duration(750);
+
+      svgBar.selectAll('rect')
+        // .selectAll('rect')
         .data(publisherSalesData)
-        .join('rect')
-        .attr('x', xScale(0))
-        .attr('y', (d, i) => yScale(i))
-        .attr('width', d => xScale(d.value) - xScale(0))
-        .attr('height', yScale.bandwidth())
-        .attr('fill', d => colorScale(d.name))
-        .attr('class', `bar`)
-        .attr('id', d => `bar-${d.index}`)
-        .on('mouseover', (e, d) => {
-          publisherOnMouseOver(d)
-        })
-        .on('mouseleave', (e, d) => {
-          publisherOnMouseLeave(d)
-        })
-        .on('click', (event, d) => {
-          publisherOnClick(d, colorScale)
-        })
+        .join(
+          enter => enter.append('rect')
+            .call(enter => enter.transition(tBar)
+              .attr('x', bar_xScale(0))
+              .attr('y', (d, i) => bar_yScale(i))
+              .attr('width', d => bar_xScale(d.value) - bar_xScale(0))
+              .attr('height', bar_yScale.bandwidth())
+              .attr('fill', d => colorScale(d.name))
+              .attr('class', `bar`)
+              .attr('id', d => `bar-${d.index}`))
+            .on('mouseover', (e, d) => {
+              publisherOnMouseOver(d)
+            })
+            .on('mouseleave', (e, d) => {
+              publisherOnMouseLeave(d)
+            })
+            .on('click', (event, d) => {
+              publisherOnClick(d, colorScale)
+            }),
+          update => update
+            .call(update => update.transition(tBar)
+              .attr('x', bar_xScale(0))
+              .attr('y', (d, i) => bar_yScale(i))
+              .attr('width', d => bar_xScale(d.value) - bar_xScale(0))
+              .attr('height', bar_yScale.bandwidth())
+              .attr('fill', d => colorScale(d.name))
+              .attr('class', `bar`)
+              .attr('id', d => `bar-${d.index}`))
+            .on('mouseover', (e, d) => {
+              publisherOnMouseOver(d)
+            })
+            .on('mouseleave', (e, d) => {
+              publisherOnMouseLeave(d)
+            })
+            .on('click', (event, d) => {
+              publisherOnClick(d, colorScale)
+            }),
+          exit => exit.remove()
+        )
 
-      // add text labels to bar chart
-      svgBar.append("g")
-        .attr("fill", "white")
-        .attr("text-anchor", "end")
-        .attr("font-family", "sans-serif")
-        .attr("font-size", 12)
-        .selectAll("text")
-        .data(publisherSalesData)
-        .join("text")
-        .attr("x", d => xScale(d.value))
-        .attr("y", (d, i) => yScale(i) + yScale.bandwidth() / 2)
-        .attr("dy", "0.35em")
-        .attr("dx", -4)
-        .attr("font-weight", "bold")
-        .text(d => format(d.value))
-        .call(text => text.filter(d => xScale(d.value) - xScale(0) < 20) // short bars
-          .attr("dx", +4)
-          .attr("fill", "black")
-          .attr("text-anchor", "start"));
+      svgBar.select('.x.axis')
+        .transition()
+        .duration(1000)
+        .call(bar_xaxis);
 
-          svgBar.append('g')
-        .call(xAxis)
+      svgBar.select('.y.axis')
+        .transition()
+        .duration(1000)
+        .call(bar_yaxis
+          .tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
 
-        svgBar.append('g')
-        .call(yAxis)
-        .style('font-size', '16px')
+      console.log(svgBar.selectAll('.x-axis'), 'poopie')
     }
 
     dataJoinBarChart()
@@ -250,6 +300,7 @@ d3.csv(genreDataUrl).then((genreData) => {
     const dataJoinBubbleChart = () => {
       // filter test
       const dataFiltBubble = dataFilt.filter(d => !selectedPublisher || (d.Publisher == selectedPublisher.name))
+      console.log(dataFilt.length, 'THE LENGTH')
       const gameSalesData = sumByCol(dataFiltBubble, 'Name', 'Global_Sales')
 
       // color by name
@@ -379,7 +430,7 @@ d3.csv(genreDataUrl).then((genreData) => {
     //////////
 
     // set the dimensions and margins of the graph
-    var margin = { top: 60, right: 230, bottom: 50, left: 100 } //,
+    // var margin = { top: 60, right: 230, bottom: 50, left: 100 } //,
     // width = 1000 - margin.left - margin.right,
     // height = 750 - margin.top - margin.bottom;
 
@@ -419,8 +470,12 @@ d3.csv(genreDataUrl).then((genreData) => {
       .range([0, width]);
     var xAxis = svg.append("g")
       .attr("transform", "translate(0," + height + ")")
-      .call(d3.axisBottom(x).ticks(5))
+      .style("font-family", "sans-serif")
+      .style("font-size", '16px')
+      .call(d3.axisBottom(x).ticks(5)
+        .tickFormat(i => i))
 
+    // .tickFormat((d, i) => d);
     // Add X axis label:
     svg.append("text")
       .attr("text-anchor", "end")
@@ -428,7 +483,7 @@ d3.csv(genreDataUrl).then((genreData) => {
       .attr("y", height + 40)
       .attr("font-family", "sans-serif")
       .attr("font-size", 24)
-      .text("Time (year)")
+      .text("Year")
 
     // Add Y axis label:
     svg.append("text")
@@ -446,6 +501,8 @@ d3.csv(genreDataUrl).then((genreData) => {
       .domain([0, 700])
       .range([height, 0]);
     svg.append("g")
+      .style("font-family", "sans-serif")
+      .style("font-size", '16px')
       .call(d3.axisLeft(y).ticks(5))
 
     //////////
@@ -464,7 +521,7 @@ d3.csv(genreDataUrl).then((genreData) => {
     // Add brushing
     var brush = d3.brushX()                 // Add the brush feature using the d3.brush function
       .extent([[0, 0], [width, height]]) // initialise the brush area: start at 0,0 and finishes at width,height: it means I select the whole graph area
-      .on("brush", updateChart) // Each time the brush selection changes, trigger the 'updateChart' function
+      .on("end", updateChart) // Each time the brush selection changes, trigger the 'updateChart' function
 
     // // Create the scatter variable: where both the circles and the brush take place
     var areaChart = svg.append('g')
@@ -653,6 +710,7 @@ d3.csv(genreDataUrl).then((genreData) => {
       .text(function (d) { return d })
       .attr("text-anchor", "left")
       .style("alignment-baseline", "middle")
+      .style('font-family', 'sans-serif')
       .on("mouseover", highlight)
       .on("mouseout", noHighlight)
       .on("click", genreChoice)
