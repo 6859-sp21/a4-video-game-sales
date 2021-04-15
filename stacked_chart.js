@@ -2,7 +2,7 @@ const dataUrl = 'https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales
 const genreDataUrl = "https://raw.githubusercontent.com/6859-sp21/a4-video-game-sales/main/aggregated_genre.csv"
 
 const width = 900
-const height = 400
+const height = 350
 
 const bubbleWidth = 1200
 const bubbleHeight = 800
@@ -67,7 +67,7 @@ const addFilterTexts = (svgObject, selectedGenres, startYear, endYear, genreColo
             enter => enter.append('text')
                 .attr('class', 'genre')
                 .attr('x', xLeft)
-                .attr('y', '-20')
+                .attr('y', '-30')
                 .attr('font-size', '18px')
                 .attr('font-weight', 'bold')
                 .style('opacity', 1)
@@ -86,7 +86,7 @@ const addFilterTexts = (svgObject, selectedGenres, startYear, endYear, genreColo
             enter => enter.append('text')
                 .attr('class', 'year')
                 .attr('x', xRight)
-                .attr('y', '-20')
+                .attr('y', '-30')
                 .attr('font-size', '18px')
                 .attr('font-weight', 'bold')
                 .text(d => `${d[0]} - ${d[1]}`),
@@ -96,7 +96,7 @@ const addFilterTexts = (svgObject, selectedGenres, startYear, endYear, genreColo
         )
 }
 
-const sumByCol = (data, groupCol, dataCol) => {
+const sumByCol = (data, groupCol, dataCol, sliceNum = 10) => {
     const result = {}
     data.forEach(d => {
         const group = d[groupCol]
@@ -115,7 +115,7 @@ const sumByCol = (data, groupCol, dataCol) => {
             value: result[group],
         }))
         .sort((a, b) => b.value - a.value)
-        .slice(0, 10)
+        .slice(0, sliceNum)
         .map((vals, i) => ({
             ...vals,
             index: i,
@@ -130,11 +130,12 @@ function genreArrayRemove(arr, value) {
     });
 }
 
-function formTooltipString(value) {
+function formTooltipHtml(d) {
+    const { name, value } = d
     if (value < 0.1) {
-        return "Global Sales: Less Than 100 Thousand USD"
+        return `<p>Game: <b>${name}</b></p><p>Global Sales: <b>Less Than 100 Thousand USD</b></p>`
     }
-    return "Global Sales: " + value + " Million USD"
+    return `<p>Game: <b>${name}</b></p><p>Global Sales: <b>${value.toFixed(1)} Million USD</b></p>`
 }
 
 // pack the data
@@ -148,7 +149,7 @@ const pack = data => d3.pack()
 d3.csv(genreDataUrl).then((genreData) => {
     d3.csv(dataUrl, d3.autoType).then(data => {
 
-        const margin = ({ top: 100, right: 150, bottom: 100, left: 100 })
+        const margin = ({ top: 50, right: 150, bottom: 100, left: 100 })
 
         const defaultStartYear = 1980
         const defaultEndYear = 2020
@@ -227,7 +228,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr('transform', `translate(${marginBar.left - 5}, 0)`)
             .attr('class', 'y axis');
         
-            // Add title
+        // Add title
         svgBar.append("text")
             .attr("text-anchor", "middle")
             .attr("x", '40%')
@@ -381,16 +382,6 @@ d3.csv(genreDataUrl).then((genreData) => {
 
         dataJoinBarChart()
 
-        var bubbleTooltip = d3.select("#bubble")
-            .append("div")
-            .style("opacity", 0)
-            .attr("class", "tooltip")
-            .style("background-color", "white")
-            .style("border", "solid")
-            .style("border-width", "1px")
-            .style("border-radius", "5px")
-            .style("padding", "10px")
-
         const marginBubbble = { left: 0, right: 0, top: 75, bottom: 0 }
 
         const svgBubble = d3.select("#bubble")
@@ -403,17 +394,46 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr('font-size', '16px')
             .attr('font-family', 'monospace')
             .attr('text-anchor', 'middle')
-
+            // .style('z-index', '999')
+        
+        var bubbleTooltip = d3.select("#bubble")
+            // .append('foreignObject')
+            //     .attr("class", "tooltip")
+            //     .attr('width', '400px')
+            //     .attr('height', '200px')
+            //     .style('z-index', '-1')
+            .append("div")
+                .attr('width', '400px')
+                .attr('height', '200px')
+                .attr("class", "tooltip-div")
+                .style("opacity", 0)
+                .style("background-color", "white")
+                .style("border", "solid")
+                .style("border-width", "1px")
+                .style("border-radius", "5px")
+                .style("padding", "10px")
+                .style('position', 'absolute')
+                // .style('z-index', '-1')
+            
+        
+        // Add title
+        svgBubble.append("text")
+            .attr("text-anchor", "middle")
+            .attr("x", '52%')
+            .attr("y", 0)
+            .attr("font-family", "monospace")
+            .attr("font-size", '24px')
+            .text("Top 25 Games")
+        
         const bubbleMouseOver = d => {
             // console.log('d-mouseover', d)
             // console.log(`translate(${d.x + 90}, ${(d.y + 90)})`)
-            bubbleTooltip
-                // .attr("transform", `translate(${d.x + 90}, ${(d.y + 90)})`)
-                .style("left", d.x + 90 + "px")
-                .style("top", d.y + 90 + "px")
+            d3.select('.tooltip-div')
                 .style("opacity", 1)
+                .style("left", d.x + 10 + "px")
+                .style("top", d.y + "px")
                 // .html("Global Sales: " + d.value.toFixed(1) + " Million USD")
-                .html(formTooltipString(d.value.toFixed(1)))
+                .html(formTooltipHtml(d.data))
                 .transition()
         }
 
@@ -428,7 +448,7 @@ d3.csv(genreDataUrl).then((genreData) => {
         const dataJoinBubbleChart = () => {
             // filter test
             const dataFiltBubble = dataFilt.filter(d => !selectedPublisher || (d.Publisher == selectedPublisher.name))
-            const gameSalesData = sumByCol(dataFiltBubble, 'Name', 'Global_Sales')
+            const gameSalesData = sumByCol(dataFiltBubble, 'Name', 'Global_Sales', 25)
 
             // color by name
             const colorBubble = d3.scaleOrdinal(gameSalesData.map(d => d.name), d3.schemeSet3)
@@ -469,7 +489,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                         .attr('class', 'bubble-title')
                         .attr("text-anchor", "middle")
                         .attr("x", '52%')
-                        .attr("y", -20)
+                        .attr("y", '-30')
                         .attr("font-family", "monospace")
                         .attr("font-size", '18px')
                         .attr('font-weight', 'bold')
@@ -480,6 +500,16 @@ d3.csv(genreDataUrl).then((genreData) => {
                          .text(publisherTitle),
                     exit => exit.remove()
                 )
+            
+            const trimGameName = (d) => {
+                const { name } = d.data
+                const trimLength = 30
+                if (name.length > trimLength) {
+                    return `${name.substring(0, trimLength)}...`
+                }
+
+                return name
+            }
                 
             const leaf = svgBubble.selectAll('g')
                 .data(leaves)
@@ -510,7 +540,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2}em`)
                             .attr('font-size', '16px')
-                            .text(d => d.data.name)
+                            .text(trimGameName)
                             .call(wrap, bubbleWrapWidth)
                             // .call(wrap, d => 
                             //     {
@@ -545,7 +575,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
                             .attr('font-size', '16px')
-                            .text(d => d.data.name)
+                            .text(trimGameName)
                             .call(wrap, bubbleWrapWidth)
                             // .call(wrap, d => 
                             //     {
@@ -655,6 +685,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("y", '-20')
             .attr("font-family", "monospace")
             .attr("font-size", '12px')
+            .attr('font-weight', 'bold')
             .text("🖱️ Click to filter by genre!")
         svg.append("text")
             .attr("text-anchor", "middle")
@@ -662,6 +693,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("y", '0')
             .attr("font-family", "monospace")
             .attr("font-size", '12px')
+            .attr('font-weight', 'bold')
             .text("⇧+🖱️ Shift + Click to multiselect!")
 
         svg.append("text")
@@ -670,6 +702,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .attr("y", '20')
             .attr("font-family", "monospace")
             .attr("font-size", '12px')
+            .attr('font-weight', 'bold')
             .text("🖱️ + ↔️ Click & drag to select a time range!")
 
         //////////

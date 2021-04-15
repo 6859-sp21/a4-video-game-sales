@@ -8,8 +8,10 @@ html {
 }
 
 body {
-    margin-bottom: 0px;
-    background-color: #F5F5F5;
+    /* margin-bottom: 0px; */
+    /* background-color: #F5F5F5; */
+    background-color: black;
+    margin: 0;
   }
   .error {
       color: red;
@@ -122,4 +124,25 @@ body {
   }
   #myBtn:hover {
     background-color: #555;
+  }
+
+  #bubble {
+    position: relative;
+  }
+
+  .image {
+    width: 100%;
+    position: relative;
+  }
+
+  .background {
+    position: absolute;
+    opacity: 0.5;
+  }
+
+  .start {
+    position: absolute;
+    left: 25%;
+    top: 250px;
+    cursor: pointer;
   }

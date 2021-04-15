@@ -19,7 +19,25 @@
 </head>
 
 <body>
-    <div id="wrapper">
+    <script>
+        const onImageClick = () => {
+            d3.selectAll('body').style('background-color', '#F5F5F5').transition().duration(1000)
+            d3.selectAll('.image')
+                .transition()
+                .duration(1000)
+                .style('opacity', '0')
+                .on('end', () => {
+                    d3.selectAll('.image').style('display', 'none')
+                    d3.selectAll('#wrapper').style('display', 'flex').transition().duration(1200).style('opacity', '1').on('end', () => {  
+                    })
+                })
+        }
+    </script>
+    <div class="image">
+        <img src="background_new.jpg" class="background" />
+        <img src="start.png" class="start" onclick="onImageClick()" />
+    </div>
+    <div id="wrapper" style="display: none; opacity: 0;">
         <button onclick="topFunction()" id="myBtn" title="Go to top">back to top ⬆️</button>
         <div id="header">
             <div class="container">
@@ -37,9 +55,12 @@
             </div>
             <p class="description">
                 🎮 Video games sales have taken off since they came onto the scene in the 1980s. 🚀
+                <br>
+                <br>
+                <b>🖱️ Click through the charts below</b> to explore your favorite games, and learn about some games you've never even heard of!
                 <!-- <br>
               <br>
-              🖱️ <b>Click through the charts below</b> to explore your favorite games, and learn about some games you've never even heard of!
+              🖱️ 
               <br>
               <br>
               ⇧+🖱️ <b>Shift + Click to select multiple items in bar charts. 📊</b>
@@ -71,12 +92,14 @@
                 🔗 <b>Useful Links</b>
                 <br>
                 <br>
+                📄 <a href="https://github.com/6859-sp21/a4-video-game-sales#readme" target="_blank">Project Writeup</a>
+                <br>
                 📈 <a href="https://www.kaggle.com/arslanali4343/sales-of-video-games" target="_blank"> Original Kaggle
                     Dataset</a>
                 <br>
                 💻 <a href="https://github.com/6859-sp21/a4-video-game-sales" target="_blank">GitHub Repository</a>
                 <br>
-                📄 <a href="https://altair-viz.github.io/" target="_blank">Altair Visualization Software</a>
+                📄 <a href="https://d3js.org/" target="_blank">D3 Visualization Software</a>
                 <br>
                 ✏️ <a href="http://vis.mit.edu/classes/6.859/" target="_blank">6.859 Home</a>
                 <br>
@@ -90,7 +113,7 @@
                 <br>
                 - Kevin Lyons {kalyons}
             </p>
-            <img id="yoda" src="yoda.jpeg">
+            <img id="yoda" src="yoda-transparent.png">
         </div>
     </div>
 
