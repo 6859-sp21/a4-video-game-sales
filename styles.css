@@ -1,0 +1,128 @@
+.cols {
+    display: flex;
+    flex-direction: row;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin-bottom: 0px;
+  }
+  .error {
+      color: red;
+  }
+  #wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: monospace !important;
+  }
+  #header, #about {
+    width: 80%;
+    /*padding-left: 200px;
+    padding-right: 200px;*/
+    display: flex;
+    justify-content: center;
+    /*align-items: center;*/
+    flex-direction: column;
+    padding-bottom: 25px;
+  }
+
+  .chart-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+  }
+
+  #top-bar {
+    display: flex;
+    flex-direction: row;
+    vertical-align: middle;
+  }
+  #about {
+    padding-bottom: 0px !important;
+  }
+  #page-title {
+    font-size: 3em;
+  }
+  .description {
+    font-size: 1.5em;
+    padding-bottom: 25px;
+  }
+  .description-top {
+    /*vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;*/
+    padding-bottom: 0px !important;
+  }
+  .container {
+      display: flex;
+      flex-wrap: wrap;
+  }
+  .top-left {
+    flex: 50%; 
+  }
+
+  .top-right {
+    /*flex: 50%;*/
+    text-align: right;
+    vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 0px !important;
+  }
+
+  .bottom-left {
+    flex: 50%;
+  }
+
+  .bottom-right {
+    flex: 50%;
+    text-align: right;
+  }
+  #spacer {
+    color: black;
+    border-style: inset;
+    border-width: 1px;
+    margin: 0.5em auto;
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+  }
+  #yoda {
+    width: 30%;
+  }
+  #vis {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  #myBtn {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    z-index: 99;
+    font-size: 18px;
+    border: none;
+    outline: none;
+    background-color: gray;
+    color: white;
+    cursor: pointer;
+    padding: 15px;
+    border-radius: 4px;
+    font-family: monospace !important;
+  }
+  #myBtn:hover {
+    background-color: #555;
+  }
+
+/* .bar:hover {
+    opacity: 1;
+} */
