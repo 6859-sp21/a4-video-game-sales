@@ -42,6 +42,15 @@ function wrap(text, width) {
     });
 }
 
+const trimStringToLength = (name) => {
+    const trimLength = 28
+    if (name.length > trimLength) {
+        return `${name.substring(0, trimLength)}...`
+    }
+
+    return name
+}
+
 const addFilterTexts = (svgObject, selectedGenres, startYear, endYear, genreColorScale, xLeft, xRight) => {
     const genreText = () => {
         if (selectedGenres.length === 0) {
@@ -375,7 +384,7 @@ d3.csv(genreDataUrl).then((genreData) => {
                 .transition()
                 .duration(1000)
                 .call(bar_yaxis
-                    .tickFormat(i => publisherSalesData[i].name).tickSizeOuter(0))
+                    .tickFormat(i => trimStringToLength(publisherSalesData[i].name)).tickSizeOuter(0))
                 .style("font-family", "monospace")
                 .style("font-size", '16px')
         }
@@ -501,16 +510,6 @@ d3.csv(genreDataUrl).then((genreData) => {
                     exit => exit.remove()
                 )
             
-            const trimGameName = (d) => {
-                const { name } = d.data
-                const trimLength = 30
-                if (name.length > trimLength) {
-                    return `${name.substring(0, trimLength)}...`
-                }
-
-                return name
-            }
-                
             const leaf = svgBubble.selectAll('g')
                 .data(leaves)
                 .join(
@@ -534,19 +533,15 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .append("use")
 
                         enter.append("text")
+                            .attr('class', 'bubbletext')
                             .selectAll("tspan")
                             .data(d => d)
                             .join("tspan")
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2}em`)
                             .attr('font-size', '16px')
-                            .text(trimGameName)
+                            .text(d => trimStringToLength(d.data.name))
                             .call(wrap, bubbleWrapWidth)
-                            // .call(wrap, d => 
-                            //     {
-                            //         console.log("gooch",d)
-                            //         d.r-10
-                            //     })
                             .on('mouseover', (event, d) => {
                                 bubbleMouseOver(d)
                             })
@@ -575,13 +570,8 @@ d3.csv(genreDataUrl).then((genreData) => {
                             .attr("x", 0)
                             .attr("y", (d, i, nodes) => `${i - nodes.length / 2 + 0.8}em`)
                             .attr('font-size', '16px')
-                            .text(trimGameName)
+                            .text(d => trimStringToLength(d.data.name))
                             .call(wrap, bubbleWrapWidth)
-                            // .call(wrap, d => 
-                            //     {
-                            //         console.log("gooch",d)
-                            //         d.r-10
-                            //     })
                             .on('mouseover', (event, d) => {
                                 bubbleMouseOver(d)
                             })
@@ -602,6 +592,12 @@ d3.csv(genreDataUrl).then((genreData) => {
                 if (selectedPublisher) {
                     // re-join
                     selectedPublisher = null
+
+                    d3.selectAll('.bar')
+                        .transition()
+                        .delay(100)
+                        .style('opacity', 1)
+
                     dataJoinBubbleChart()
                 }
             })
@@ -865,6 +861,7 @@ d3.csv(genreDataUrl).then((genreData) => {
             .append('xhtml:input')
             .attr("type", "button")
             .attr("class", "button")
+            .attr('id', 'testButton')
             .attr("value", "Reset Genres & Time Range")
             .attr('cursor', 'pointer')
 
